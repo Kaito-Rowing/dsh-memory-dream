@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { parseMemory, renderMemory, charCount, DEFAULT_HEADER } from '../lib/memory.js'
+import { ZSTD_AVAILABLE as ZSTD } from '../lib/transcripts.js'
 
 // ---------------------------------------------------------------- parsing
 
@@ -197,7 +198,7 @@ test('guard passes text through when scanning is disabled', async () => {
 
 // ---------------------------------------------------------------- transcripts
 
-test('decompressFrames handles multi-frame zstd', async () => {
+test('decompressFrames handles multi-frame zstd', { skip: !ZSTD }, async () => {
   const { decompressFrames } = await import('../lib/transcripts.js')
   const { zstdCompressSync } = await import('node:zlib')
   const a = zstdCompressSync(Buffer.from('first\n'))
@@ -225,7 +226,7 @@ test('toConversation keeps user and assistant text only', async () => {
   assert.equal(turns[0].text, 'hello')
 })
 
-test('readRecentSessions reads a synthetic session tree', async () => {
+test('readRecentSessions reads a synthetic session tree', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
   const { zstdCompressSync } = await import('node:zlib')
   const home = await mkdtemp(join(tmpdir(), 'memdream-sess-'))
@@ -248,7 +249,7 @@ test('readRecentSessions reads a synthetic session tree', async () => {
   }
 })
 
-test('readRecentSessions respects the since filter', async () => {
+test('readRecentSessions respects the since filter', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
   const home = await mkdtemp(join(tmpdir(), 'memdream-sess2-'))
   try {

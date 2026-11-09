@@ -4,6 +4,7 @@ import { mkdtemp, rm, readFile, writeFile, mkdir, readdir } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { zstdCompressSync } from 'node:zlib'
+import { ZSTD_AVAILABLE as ZSTD } from '../lib/transcripts.js'
 
 let counter = 0
 
@@ -267,7 +268,7 @@ test('injection: disabled by config', async () => {
 
 // ---------------------------------------------------------------- dream
 
-test('dream: material includes memory, notes and transcripts', async () => {
+test('dream: material includes memory, notes and transcripts', { skip: !ZSTD }, async () => {
   await sandbox(async (home) => {
     const p = await boot({ home, config: { transcriptsSameWorkspace: false } })
     await p.call('memory', { operations: [{ action: 'add', content: 'deploy target is staging' }] })
@@ -341,7 +342,7 @@ test('dream: rejects a hostile date', async () => {
   })
 })
 
-test('dream: transcript scanning marks poisoned sessions', async () => {
+test('dream: transcript scanning marks poisoned sessions', { skip: !ZSTD }, async () => {
   await sandbox(async (home) => {
     const p = await boot({ home, config: { transcriptsSameWorkspace: false } })
     const dir = join(home, 'sessions', '--w--', 'session-bad')
