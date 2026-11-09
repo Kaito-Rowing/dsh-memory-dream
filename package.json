@@ -1,7 +1,7 @@
 {
   "name": "dsh-memory-dream",
-  "version": "0.2.0",
-  "description": "Layered agent memory for DeepSeek Harness: a hard-capped MEMORY.md index injected every turn, dated notes, topic wikis, and a dream pass that verifies memory against real conversation transcripts and records what it cannot resolve.",
+  "version": "0.3.0",
+  "description": "Layered agent memory for DeepSeek Harness: a hard-capped MEMORY.md index injected every turn, dated notes, topic wikis, a dream pass that verifies memory against real conversation transcripts, and optional local telemetry for debugging it.",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -12,13 +12,14 @@
   },
   "files": [
     "lib/",
+    "scripts/",
     "cordis.patch.yml",
     "README.md",
     "README.ja.md",
     "docs/architecture.svg"
   ],
   "scripts": {
-    "test": "node test/setup.mjs && node --test test/*.test.mjs"
+    "test": "node test/setup.mjs && node --test test/units.test.mjs test/integration.test.mjs test/telemetry.test.mjs test/observability.test.mjs"
   },
   "engines": {
     "node": ">=20"

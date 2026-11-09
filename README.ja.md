@@ -137,6 +137,7 @@ dsh plugin --profile web add link:/path/to/dsh-memory-dream
     transcriptMaxChars: 40000    # トランスクリプトの文字数予算
     transcriptsSameWorkspace: true  # 現在のワークスペースのセッションのみ
     language: en                 # ツール文言: en | ja
+    log: false                   # ローカル開発用テレメトリ（下記）
 ```
 
 既定値はすべて、素のインストールでそのまま動きます。不正な値はエラーにせず既定値に戻します。
@@ -156,6 +157,82 @@ memory_dream を実行してください。材料を読み、新しい事実を�
 ```
 
 毎晩が妥当な既定値です。Anthropic も「適切な頻度は未解決の問題」と書いています。夢が何も見つけなくなったら、頻度を下げてください。
+
+## ローカル開発用テレメトリ
+
+記憶システムのデバッグでは、ツールの戻り値では分からないことを知りたくなります。dream は本当にトランスクリプトを読んだのか、それともフォールバックしたのか。上限で弾かれたのか、書き込みが失敗したのか。あの訂正は本物か、モデルの幻覚か。
+
+`log: true` で構造化イベントをローカルに記録します。**既定は無効**で、リポジトリの外に書き、記録した内容がモデルに戻ることは一切ありません。
+
+```yaml
+- id: memory-dream
+  name: dsh-memory-dream
+  config:
+    log: true
+    logDir: /home/you/.dsh-memory-dream-logs   # 任意。これが既定の場所
+    logDebug: false                            # 追加フィールド。本文は記録しない
+    logMaxBytes: 8388608                       # 8 MiB でローテーション
+    logMaxFiles: 5                             # ローテーション後の保持数
+```
+
+出力は 2 つ。問いが違うからです。
+
+| ファイル | 用途 |
+|---|---|
+| `events.jsonl` | 1 行 1 JSON。`jq` やスクリプト向け |
+| `runs/<runId>.md` | dream 1 回分の人間向けサマリー |
+
+すべてのイベントに `runId` が付くので、dream 1 回をそれで絞れば再構成できます。
+
+```
+09:17:18.097 plugin.start             cap=4000 lookback=14d inject=true
+09:17:18.109 memory.write        11ms applied=1 entries=1 usage=24/4000
+09:17:18.113 note.append          2ms date=2026-11-09 chars=6
+09:17:18.120 audit                    FAIL scanned=4 findings=1 removed=0
+09:17:18.121 dream.start              date=2026-11-09 record=true
+09:17:18.123 dream.material           memory=2/61c notes=1 sessions=17 transcript=4821c ws=ok blocked=1
+09:17:18.125 dream.record             chars=22 appended=false
+09:17:18.125 dream.end            4ms record=true synthesis=false
+```
+
+`scripts/log-report.mjs` で読めます。
+
+```bash
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs            # タイムライン
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --runs     # 実行一覧
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --slow     # 遅い処理
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --run run_x --json
+```
+
+### 記録するもの
+
+件数、所要時間、ID、結果、パターン名。具体的には:
+
+- `memory.write` — 操作種別ごとの要求数、適用数、結果のエントリ数と使用量、上限で弾かれたか
+- `dream.material` — エントリ数、ノート数、セッション数、トランスクリプト文字数、ワークスペース照合が一致したかフォールバックしたか、ブロックされたエントリ数
+- `dream.record` / `dream.synthesis` — 書いた文字数と行数、追記だったか
+- `audit` — 層ごとの検出数、重大度、発火したパターン
+- `inject.render` — 注入した文脈のサイズとエントリ数
+- `lock.degraded` — プロセス間ロックなしで進んだ書き込み
+- `wiki.read` / `wiki.write` / `note.append` — トピック、サイズ、ブロックの有無
+
+### 記録しないもの
+
+記憶の本文、wiki の本文、ノートの本文、夢の記録、会話のトランスクリプト、プロンプト、API キー、認証情報。ロガーは全フィールドを無害化します。文字列は 200 文字で切り詰め、配列は上限を設け、深さを制限し、内容を含む固定キー（`text`、`content`、`prompt`、`message`、`memory`、`token`、`apiKey` など）は、呼び出し側が渡してきても `[redacted]` に置き換えます。
+
+`logDebug` はマーカーと追加のタイミング情報を足します。本文の記録を有効にするものではありません。本文を記録するモードは存在しません。
+
+### 安全性
+
+- **ログの失敗が記憶を壊さない。** すべての書き込みを包んであり、パスが壊れていれば最初のエラーでロガーを無効化し、記憶の操作は続行します。`logDir` をファイルに向けても書き込みが成功することをテストで確認しています。
+- **ファイルは所有者のみ**（POSIX で `0o600`）。
+- **ローテーション** は `events.logMaxBytes` を超えたら回し、`logMaxFiles` を超えた古いファイルを削除します。
+- **git ワークツリー内のログディレクトリは拒否**し、`memory_status` がそう報告します。`.gitignore` も既定の場所をカバーしているので、どちらかで事故れば必ず止まります。
+- **ログは注入されません。** 記憶階層の一部ではなく、プロンプトに読み戻すコードパスは存在しません。
+
+### `dreams/` との関係
+
+`dreams/YYYY-MM-DD.md` は**記憶の成果物**です。エージェントが自分について下した結論で、履歴として残し、後でエージェント自身が読みます。テレメトリログは**開発の成果物**です。プラグインが機械的に何をしたかを、人間がデバッグするために残します。書く場所もコードも別で、どちらも他方から導出されません。
 
 ## データの安全性
 

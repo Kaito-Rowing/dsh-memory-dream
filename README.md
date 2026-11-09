@@ -137,6 +137,7 @@ Restart the profile. The plugin creates `~/.dsh/memory/` on first use.
     transcriptMaxChars: 40000    # text budget for transcripts
     transcriptsSameWorkspace: true  # only sessions from the current workspace
     language: en                 # tool text: en | ja
+    log: false                   # local development telemetry (see below)
 ```
 
 Every default works on a fresh install. Invalid values fall back to the default rather than failing.
@@ -156,6 +157,107 @@ move. Run memory_audit and investigate anything it blocks.
 ```
 
 Nightly is a reasonable default. Anthropic notes that the right cadence is still an open question — if the dream keeps finding nothing, run it less often.
+
+## Local development telemetry
+
+Debugging a memory system means answering questions the tool results do not:
+did the dream actually read the transcripts, or did it fall back? Did the cap
+reject the batch, or did the write fail? Was that a real correction or a
+model hallucination?
+
+Setting `log: true` records structured events to a local directory. **It is off
+by default**, writes outside the repository, and nothing it records is ever fed
+back into the model.
+
+```yaml
+- id: memory-dream
+  name: dsh-memory-dream
+  config:
+    log: true
+    logDir: /home/you/.dsh-memory-dream-logs   # optional; this is the default location
+    logDebug: false                            # extra fields, still no text
+    logMaxBytes: 8388608                       # rotate after 8 MiB
+    logMaxFiles: 5                             # keep 5 rotated files
+```
+
+Two outputs, because they answer different questions:
+
+| File | For |
+|---|---|
+| `events.jsonl` | one JSON object per line, for `jq` and scripts |
+| `runs/<runId>.md` | a one-page human summary of a dream |
+
+Every event carries `runId`, so a dream can be reconstructed by filtering on
+it. A run reads like this:
+
+```
+09:17:18.097 plugin.start             cap=4000 lookback=14d inject=true
+09:17:18.109 memory.write        11ms applied=1 entries=1 usage=24/4000
+09:17:18.113 note.append          2ms date=2026-11-09 chars=6
+09:17:18.120 audit                    FAIL scanned=4 findings=1 removed=0
+09:17:18.121 dream.start              date=2026-11-09 record=true
+09:17:18.123 dream.material           memory=2/61c notes=1 sessions=17 transcript=4821c ws=ok blocked=1
+09:17:18.125 dream.record             chars=22 appended=false
+09:17:18.125 dream.end            4ms record=true synthesis=false
+```
+
+`scripts/log-report.mjs` reads the log:
+
+```bash
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs            # timeline
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --runs     # run index
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --slow     # slowest operations
+node scripts/log-report.mjs ~/.dsh-memory-dream-logs --run run_x --json
+```
+
+### What is recorded
+
+Counts, durations, ids, outcomes and pattern names. Specifically:
+
+- `memory.write` — how many operations of each kind were requested, how many
+  applied, the resulting entry count and usage, and whether the cap rejected it
+- `dream.material` — entries, notes, sessions, transcript characters, whether
+  the workspace filter matched or fell back, blocked-entry count
+- `dream.record` / `dream.synthesis` — characters and lines written, whether it
+  was an append
+- `audit` — per-layer finding counts, severities, and which patterns fired
+- `inject.render` — size and entry count of the injected context
+- `lock.degraded` — a write that proceeded without the cross-process lock
+- `wiki.read` / `wiki.write` / `note.append` — topic, size, blocked flag
+
+### What is never recorded
+
+Memory text, wiki text, note text, dream records, conversation transcripts,
+prompts, API keys and credentials. The logger sanitizes every field: strings
+are truncated to 200 characters, arrays capped, depth bounded, and a fixed list
+of content-bearing keys (`text`, `content`, `prompt`, `message`, `memory`,
+`token`, `apiKey`, …) is replaced with `[redacted]` even if a caller passes it.
+
+`logDebug` adds a marker and extra timing fields. It does not enable content
+capture — there is no mode that records text.
+
+### Safety properties
+
+- **A logging failure cannot break memory.** Every write is wrapped; a broken
+  path disables the logger after the first error and the memory operations
+  continue. There is a test that points `logDir` at a file and asserts the
+  write still succeeds.
+- **Files are owner-only** (`0o600`) on POSIX.
+- **Rotation** keeps `events.jsonl` under `logMaxBytes` and prunes rotated
+  files beyond `logMaxFiles`.
+- **A log directory inside a git worktree is refused**, and `memory_status`
+  says so. The `.gitignore` also covers the default location, so a mistake in
+  either place does not end up in a commit.
+- **Logs are never injected.** They are not part of the memory hierarchy and
+  no code path reads them back into a prompt.
+
+### Relation to `dreams/`
+
+`dreams/YYYY-MM-DD.md` is a *memory artifact*: what the agent concluded about
+itself, kept as history and readable by the agent later. The telemetry log is a
+*development artifact*: what the plugin mechanically did, for a human
+debugging it. They are written to different places, by different code, and
+neither is derived from the other.
 
 ## Data safety
 
