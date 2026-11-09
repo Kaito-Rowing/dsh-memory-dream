@@ -322,6 +322,30 @@ test('no memory or conversation text reaches the log', async () => {
   })
 })
 
+test('a rejected write does not log the text it quoted back', async () => {
+  await sandbox(async (home) => {
+    const logDir = join(home, 'logs')
+    const p = await boot({ home, config: { log: true, logDir } })
+
+    // Several rejection messages quote the caller's `old_text` — "no entry
+    // contains ..." — so logging the raw message wrote memory content into a
+    // file this module promises never contains any. The log keeps a
+    // classification instead.
+    const secret = 'SECRET-OLD-TEXT-FRAGMENT'
+    const r = await p.call('memory', {
+      operations: [{ action: 'patch', old_text: secret, content: 'x' }],
+    })
+    assert.equal(r.success, false)
+    // The model still needs the detail, so the tool result keeps it.
+    assert.match(r.error, new RegExp(secret))
+
+    await settle()
+    const raw = await readFile(join(logDir, 'events.jsonl'), 'utf8')
+    assert.doesNotMatch(raw, new RegExp(secret), 'old_text must never be logged')
+    assert.match(raw, /"errorKind":"old-text-not-found"/, 'the reason is still recorded')
+  })
+})
+
 // ---------------------------------------------------------------- resilience
 
 test('a broken log directory does not break memory', async () => {

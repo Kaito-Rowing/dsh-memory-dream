@@ -19,7 +19,7 @@
     "docs/architecture.svg"
   ],
   "scripts": {
-    "test": "node test/setup.mjs && node --test test/units.test.mjs test/integration.test.mjs test/telemetry.test.mjs test/observability.test.mjs"
+    "test": "node test/setup.mjs && node --test test/units.test.mjs test/integration.test.mjs test/cordis.test.mjs test/telemetry.test.mjs test/observability.test.mjs"
   },
   "engines": {
     "node": ">=20"
