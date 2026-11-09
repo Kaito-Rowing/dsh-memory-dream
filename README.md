@@ -118,7 +118,7 @@ Restart the profile. The plugin creates `~/.dsh/memory/` on first use.
 | `memory_note` | Append to a dated note. |
 | `memory_wiki` | Read or write a topic page. Omit `content` to read. |
 | `memory_dream` | Assemble dream material; optionally write the record and synthesis. |
-| `memory_status` | Usage, counts, and whether injection is active. |
+| `memory_status` | Usage, counts, whether injection is active, and lock state. |
 | `memory_audit` | Scan every layer for injection patterns. |
 
 ## Config
@@ -159,8 +159,16 @@ Nightly is a reasonable default. Anthropic notes that the right cadence is still
 
 ## Data safety
 
-- **Atomic writes.** Every write goes to a temp file in the same directory and is renamed into place, so a crash mid-write cannot truncate an existing file.
-- **One writer per root.** An in-process mutex serializes writes exactly; a lock file covers two profiles sharing a home. A stale lock older than 30 seconds is broken rather than blocking forever.
+- **Atomic replacement.** `MEMORY.md`, wiki pages, dream records and the synthesis are written to a temp file in the same directory and renamed into place, so a crash mid-write cannot truncate an existing file.
+- **Serialized appends.** Notes are appended rather than replaced, so they are not atomic in that sense — but the append holds the same lock, because two appends racing on one file can interleave their bytes.
+- **One writer per root.** An in-process mutex serializes writes exactly. A lock file coordinates across processes; a lock older than 30 seconds is broken rather than blocking forever.
+- **Lock failure is reported, not silent.** If the lock file cannot be acquired within 5 seconds, the write still proceeds — the in-process mutex already covers the common case, and refusing to save a memory because a stale lock exists would lose data to protect against a race that may not exist. The degradation is recorded and shown by `memory_status`:
+
+  ```
+  lock        ok — every write held the cross-process lock
+  lock        degraded 1x — last: another process holds the lock
+  ```
+
 - **Path validation.** Every model-supplied name is validated before it becomes a path: dates must be real calendar dates (`2026-02-30` and `../../etc/passwd` both fail), topics must be kebab-case, and the resolved path is confirmed to stay under the memory root.
 - **Compatible with 0.1 data.** The 0.1 release wrote the entry separator as `§ ` prefixed to the following line. The parser recognizes both that shape and the current one, so an existing store keeps working.
 
@@ -179,7 +187,8 @@ Nightly is a reasonable default. Anthropic notes that the right cadence is still
 - **Injection needs `dsh-system-prompt`.** Compositions without it (headless) get the tools but no automatic context. `memory_status` says so.
 - **Transcript reading is filesystem-level.** It reads the JSONL generations directly rather than going through `ctx.sessionQuery`, so a future format change would need a matching update. The reader is conservative — it skips unreadable frames and never writes.
 - **The scanner is heuristic.** See above.
-- **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter silently matches nothing and the dream falls back to no transcripts rather than the wrong ones.
+- **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter matches nothing — so the reader falls back to every workspace and says so in the dream material, rather than returning an empty result that looks like "there was nothing to read".
+- **The cross-process lock is advisory.** It is a lock file, not an OS advisory lock. It coordinates two processes that both use this plugin; it cannot stop an unrelated program from writing to the same files.
 
 ## License
 

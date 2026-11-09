@@ -250,13 +250,93 @@ test('readRecentSessions reads a synthetic session tree', { skip: !ZSTD }, async
   }
 })
 
+test('readRecentSessions falls back when the workspace filter matches nothing', { skip: !ZSTD }, async () => {
+  const { readRecentSessions } = await import('../lib/transcripts.js')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
+  const home = await mkdtemp(join(tmpdir(), 'memdream-ws-'))
+  try {
+    const dir = join(home, 'sessions', '--real-workspace--', 'session-a')
+    await mkdir(dir, { recursive: true })
+    const body =
+      JSON.stringify({
+        type: 'user/message',
+        data: { source: { kind: 'user' }, content: [{ type: 'text', text: 'hello there' }] },
+      }) + '\n'
+    await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
+
+    // A filter that matches nothing must not silently return an empty result:
+    // the dream would lose every transcript and compare memory to notes alone.
+    const r = await readRecentSessions({
+      home,
+      since: '2000-01-01',
+      workspace: '--some-other-place--',
+    })
+    assert.equal(r.sessions.length, 1, 'must fall back to all workspaces')
+    assert.equal(r.workspaceMatched, false, 'the fallback must be reported')
+  } finally {
+    await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
+  }
+})
+
+test('readRecentSessions does not fall back when the filter matches', { skip: !ZSTD }, async () => {
+  const { readRecentSessions } = await import('../lib/transcripts.js')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
+  const home = await mkdtemp(join(tmpdir(), 'memdream-ws2-'))
+  try {
+    for (const ws of ['--match--', '--other--']) {
+      const dir = join(home, 'sessions', ws, `session-${ws.replace(/-/g, '')}`)
+      await mkdir(dir, { recursive: true })
+      const body =
+        JSON.stringify({
+          type: 'user/message',
+          data: { source: { kind: 'user' }, content: [{ type: 'text', text: `from ${ws}` }] },
+        }) + '\n'
+      await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
+    }
+    const r = await readRecentSessions({ home, since: '2000-01-01', workspace: '--match--' })
+    assert.equal(r.sessions.length, 1)
+    assert.equal(r.workspaceMatched, true)
+    assert.match(r.sessions[0].text, /from --match--/)
+  } finally {
+    await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
+  }
+})
+
+test('readRecentSessions reports a decompression failure per session, not fatally', { skip: !ZSTD }, async () => {
+  const { readRecentSessions } = await import('../lib/transcripts.js')
+  const home = await mkdtemp(join(tmpdir(), 'memdream-bad-'))
+  try {
+    const dir = join(home, 'sessions', '--w--', 'session-bad')
+    await mkdir(dir, { recursive: true })
+    // Valid zstd magic followed by garbage: decompression throws.
+    await writeFile(join(dir, 'session.v4.jsonl.zstd'), Buffer.from([0x28, 0xb5, 0x2f, 0xfd, 0, 0, 0, 0]))
+    const r = await readRecentSessions({ home, since: '2000-01-01' })
+    assert.equal(r.sessions.length, 0, 'a corrupt session is skipped, not fatal')
+  } finally {
+    await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
+  }
+})
+
+test('readRecentSessions reports zstd unavailability instead of throwing', async () => {
+  const { readRecentSessions, ZSTD_AVAILABLE } = await import('../lib/transcripts.js')
+  if (ZSTD_AVAILABLE) return // only meaningful on an old runtime
+  const r = await readRecentSessions({ since: '2000-01-01' })
+  assert.equal(r.sessions.length, 0)
+  assert.match(r.unavailable, /Node 22\.15/)
+})
+
 test('readRecentSessions respects the since filter', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
-  const home = await mkdtemp(join(tmpdir(), 'memdream-sess2-'))
+  const home = await mkdtemp(join(tmpdir(), 'memdream-since-'))
   try {
     const dir = join(home, 'sessions', '--w--', 'session-old')
     await mkdir(dir, { recursive: true })
-    await writeFile(join(dir, 'session.v4.jsonl'), '{"type":"user/message","data":{"source":{"kind":"user"},"content":[{"type":"text","text":"old"}]}}\n')
+    const body =
+      JSON.stringify({
+        type: 'user/message',
+        data: { source: { kind: 'user' }, content: [{ type: 'text', text: 'old' }] },
+      }) + '\n'
+    await writeFile(join(dir, 'session.v4.jsonl'), body)
     // mtime is now, so a future `since` must exclude it.
     const future = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
     const r = await readRecentSessions({ home, since: future })
