@@ -4,6 +4,7 @@ import { mkdtemp, rm, readFile, readdir, mkdir, writeFile } from 'node:fs/promis
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
+import { fileURLToPath } from 'node:url'
 
 const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
 import { ZSTD_AVAILABLE as ZSTD } from '../lib/transcripts.js'
@@ -46,6 +47,28 @@ async function sandbox(fn) {
     await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
   }
 }
+
+/**
+ * Guard against a test writing into the repository.
+ *
+ * A test that passes a relative path where an absolute one is expected will
+ * happily create `./a/events.jsonl` in the checkout. This suite exists to keep
+ * logs out of commits, so it should not be the thing that puts them there.
+ */
+test('no test writes into the repository', async () => {
+  const repoRoot = join(fileURLToPath(new URL('.', import.meta.url)), '..')
+  const offenders = []
+  for (const name of await readdir(repoRoot).catch(() => [])) {
+    if (name === 'events.jsonl' || name.startsWith('events.jsonl.')) {
+      offenders.push(name)
+    } else if (name.length <= 2 && !name.startsWith('.')) {
+      // A one- or two-letter directory at the repo root is a stray sandbox.
+      const entries = await readdir(join(repoRoot, name)).catch(() => [])
+      if (entries.some((e) => e.startsWith('events.jsonl'))) offenders.push(name)
+    }
+  }
+  assert.deepEqual(offenders, [], `stray log output in the repository: ${offenders.join(', ')}`)
+})
 
 /** Read the event log, tolerating a not-yet-created file. */
 async function events(logDir) {
@@ -318,8 +341,26 @@ test('a broken log directory does not break memory', async () => {
 
 test('logging does not change tool results', async () => {
   await sandbox(async (home) => {
-    const plain = await boot({ home: join(home, 'a') })
-    const logged = await boot({ home: join(home, 'b'), config: { log: true, logDir: join(home, 'logs') } })
+    // `boot` reads DSH_HOME, not its `home` argument, so each instance needs
+    // its own sandbox directory and an explicit env switch. Passing a relative
+    // path here previously wrote logs into the repository.
+    const plainHome = join(home, 'a')
+    const loggedHome = join(home, 'b')
+    await mkdir(plainHome, { recursive: true })
+    await mkdir(loggedHome, { recursive: true })
+
+    const prev = process.env.DSH_HOME
+
+    process.env.DSH_HOME = plainHome
+    const plain = await boot({ home: plainHome })
+
+    process.env.DSH_HOME = loggedHome
+    const logged = await boot({
+      home: loggedHome,
+      config: { log: true, logDir: join(home, 'logs') },
+    })
+
+    process.env.DSH_HOME = prev
 
     const args = { operations: [{ action: 'add', content: 'same' }] }
     const r1 = await plain.call('memory', args)
@@ -332,13 +373,115 @@ test('logging does not change tool results', async () => {
 
 // ---------------------------------------------------------------- location
 
-test('a log dir inside a git worktree is refused', async () => {
+test('a log dir inside a git worktree is refused and nothing is written', async () => {
   await sandbox(async (home) => {
     await mkdir(join(home, 'repo', '.git'), { recursive: true })
-    const p = await boot({ home, config: { log: true, logDir: join(home, 'repo', 'logs') } })
-    // The refusal is asynchronous; give it a turn.
+    const logDir = join(home, 'repo', 'logs')
+    const p = await boot({ home, config: { log: true, logDir } })
+
+    // The location check is asynchronous; give it a turn, then write.
     await new Promise((r) => setTimeout(r, 80))
+    await p.call('memory', { operations: [{ action: 'add', content: 'x' }] })
+    await settle()
+
+    const files = await readdir(logDir).catch(() => [])
+    assert.equal(files.length, 0, 'a refused log dir must stay empty')
+
     const s = await p.call('memory_status', {})
-    assert.match(s.log, /off|git worktree/)
+    assert.match(s.log, /off/)
+    assert.match(s.log, /git worktree/)
+  })
+})
+
+test('several dreams in one process leave several summaries', async () => {
+  await sandbox(async (home) => {
+    const logDir = join(home, 'logs')
+    const p = await boot({ home, config: { log: true, logDir } })
+
+    for (let i = 1; i <= 3; i++) {
+      await p.call('memory', { operations: [{ action: 'add', content: `fact ${i}` }] })
+      await p.call('memory_dream', { date: '2026-11-09', record: `## pass ${i}` })
+      await settle()
+    }
+
+    const runs = await readdir(join(logDir, 'runs'))
+    assert.equal(runs.length, 3, 'each dream must keep its own summary')
+
+    const ev = await events(logDir)
+    const starts = ev.filter((e) => e.type === 'dream.start')
+    assert.equal(starts.length, 3)
+    assert.equal(
+      new Set(starts.map((e) => e.runId)).size,
+      3,
+      'each dream must have its own run id',
+    )
+  })
+})
+
+test('each dream summary describes only its own run', async () => {
+  await sandbox(async (home) => {
+    const logDir = join(home, 'logs')
+    const p = await boot({ home, config: { log: true, logDir } })
+
+    await p.call('memory', { operations: [{ action: 'add', content: 'one' }] })
+    await p.call('memory_dream', { date: '2026-11-09', record: 'first' })
+    await settle()
+
+    await p.call('memory', { operations: [{ action: 'add', content: 'two' }] })
+    await p.call('memory_dream', { date: '2026-11-09', record: 'second' })
+    await settle()
+
+    const runs = await readdir(join(logDir, 'runs'))
+    const bodies = await Promise.all(
+      runs.map((f) => readFile(join(logDir, 'runs', f), 'utf8')),
+    )
+    const counts = bodies.map((b) => {
+      const m = b.match(/memory entries: (\d+)/)
+      return m ? Number(m[1]) : -1
+    })
+    assert.deepEqual(counts.sort(), [1, 2], 'each summary reflects its own run')
+  })
+})
+
+test('summaries are pruned to logMaxRuns', async () => {
+  await sandbox(async (home) => {
+    const logDir = join(home, 'logs')
+    const p = await boot({ home, config: { log: true, logDir, logMaxRuns: 2 } })
+
+    for (let i = 0; i < 5; i++) {
+      await p.call('memory_dream', { date: '2026-11-09', record: `pass ${i}` })
+      await settle()
+    }
+
+    const runs = await readdir(join(logDir, 'runs'))
+    assert.equal(runs.length, 2, 'summaries must be pruned')
+  })
+})
+
+test('a write failure is reported through memory_status', async () => {
+  await sandbox(async (home) => {
+    // A file where the log directory should be.
+    const blocker = join(home, 'blocked')
+    await writeFile(blocker, 'not a directory')
+    const p = await boot({ home, config: { log: true, logDir: join(blocker, 'sub') } })
+
+    await p.call('memory', { operations: [{ action: 'add', content: 'x' }] })
+    await settle()
+
+    const s = await p.call('memory_status', {})
+    assert.match(s.log, /stopped/, 'a stopped logger must say so')
+  })
+})
+
+test('a stopped logger does not change tool results', async () => {
+  await sandbox(async (home) => {
+    const blocker = join(home, 'blocked')
+    await writeFile(blocker, 'not a directory')
+    const p = await boot({ home, config: { log: true, logDir: join(blocker, 'sub') } })
+
+    const r = await p.call('memory', { operations: [{ action: 'add', content: 'survives' }] })
+    assert.equal(r.success, true)
+    const text = await p.injected()
+    assert.match(text, /survives/)
   })
 })

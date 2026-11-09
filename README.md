@@ -177,7 +177,8 @@ back into the model.
     logDir: /home/you/.dsh-memory-dream-logs   # optional; this is the default location
     logDebug: false                            # extra fields, still no text
     logMaxBytes: 8388608                       # rotate after 8 MiB
-    logMaxFiles: 5                             # keep 5 rotated files
+    logMaxFiles: 5                             # keep 5 rotated event files
+    logMaxRuns: 100                            # keep 100 dream summaries
 ```
 
 Two outputs, because they answer different questions:
@@ -185,7 +186,12 @@ Two outputs, because they answer different questions:
 | File | For |
 |---|---|
 | `events.jsonl` | one JSON object per line, for `jq` and scripts |
-| `runs/<runId>.md` | a one-page human summary of a dream |
+| `runs/<runId>.md` | a one-page human summary of one dream |
+
+**Each dream gets its own run id.** A plugin instance is not a run: one
+long-lived process dreams many times, and sharing the plugin's id would put
+every dream in one bucket and overwrite the same summary file. Three dreams
+leave three summaries.
 
 Every event carries `runId`, so a dream can be reconstructed by filtering on
 it. A run reads like this:
@@ -239,15 +245,24 @@ capture — there is no mode that records text.
 ### Safety properties
 
 - **A logging failure cannot break memory.** Every write is wrapped; a broken
-  path disables the logger after the first error and the memory operations
-  continue. There is a test that points `logDir` at a file and asserts the
-  write still succeeds.
+  path disables the logger and the memory operations continue. There is a test
+  that points `logDir` at a file and asserts the write still succeeds.
+- **A stopped logger says so.** `memory_status` reports `stopped — <reason>`
+  rather than looking identical to a logger with nothing to record.
 - **Files are owner-only** (`0o600`) on POSIX.
 - **Rotation** keeps `events.jsonl` under `logMaxBytes` and prunes rotated
-  files beyond `logMaxFiles`.
-- **A log directory inside a git worktree is refused**, and `memory_status`
-  says so. The `.gitignore` also covers the default location, so a mistake in
-  either place does not end up in a commit.
+  files beyond `logMaxFiles`. Summaries are pruned to `logMaxRuns` — the event
+  log had a cap and the summaries did not, so a long-running install
+  accumulated one small file per dream forever.
+- **A log directory inside a git worktree is refused, and nothing is written.**
+  The location check is asynchronous, so the logger starts *stopped* and is
+  released only if the path is safe. A logger that reports "off" while a line
+  has already landed in a repository is worse than either outcome alone. The
+  `.gitignore` also covers the default location.
+- **Concurrent processes append safely.** Each event is one `O_APPEND` write,
+  so two processes sharing a log directory do not tear each other's lines.
+  Rotation is per process and is the one operation that is not coordinated;
+  the worst case is a rotated file that stops growing, not a corrupt line.
 - **Logs are never injected.** They are not part of the memory hierarchy and
   no code path reads them back into a prompt.
 

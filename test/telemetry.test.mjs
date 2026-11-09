@@ -252,3 +252,129 @@ test('assertOutsideGit refuses a path inside a worktree', async () => {
     assert.equal(outside.ok, true)
   })
 })
+
+// ---------------------------------------------------------------- stop/release
+
+test('stop() prevents any further writes', async () => {
+  await sandbox(async (dir) => {
+    const log = createLogger({ dir })
+    log.stop('unsafe location')
+    log.event('should-not-land')
+    await log.flush()
+
+    const files = await readdir(dir).catch(() => [])
+    assert.equal(files.length, 0, 'a stopped logger must write nothing')
+    assert.equal(log.active, false)
+    assert.equal(log.error, 'unsafe location')
+  })
+})
+
+test('release() resumes after a stop', async () => {
+  await sandbox(async (dir) => {
+    const log = createLogger({ dir })
+    log.stop('awaiting check')
+    log.event('dropped')
+    log.release()
+    log.event('kept')
+    await log.flush()
+
+    const events = await readEvents(dir)
+    assert.equal(events.length, 1)
+    assert.equal(events[0].type, 'kept')
+    assert.equal(log.active, true)
+    assert.equal(log.error, null)
+  })
+})
+
+test('a write failure is visible through error and active', async () => {
+  await sandbox(async (dir) => {
+    const blocker = join(dir, 'blocked')
+    await writeFile(blocker, 'not a directory')
+    const log = createLogger({ dir: join(blocker, 'sub') })
+    assert.equal(log.error, null)
+
+    log.event('x')
+    await log.flush()
+    assert.equal(log.active, false)
+    assert.match(log.error, /ENOTDIR|not a directory/)
+  })
+})
+
+// ---------------------------------------------------------------- run ids
+
+test('forRun() gives each unit of work its own id', async () => {
+  await sandbox(async (dir) => {
+    const plugin = createLogger({ dir })
+    const a = plugin.forRun()
+    const b = plugin.forRun()
+    assert.notEqual(a.runId, b.runId, 'two runs must not share an id')
+    assert.notEqual(a.runId, plugin.runId, 'a run must not reuse the plugin id')
+
+    a.event('dream.start')
+    b.event('dream.start')
+    await plugin.flush()
+
+    const events = await readEvents(dir)
+    assert.equal(new Set(events.map((e) => e.runId)).size, 2)
+  })
+})
+
+test('forRun() shares the write queue with the plugin logger', async () => {
+  await sandbox(async (dir) => {
+    const plugin = createLogger({ dir })
+    const run = plugin.forRun()
+    run.event('a')
+    // Flushing the parent must wait for the child's write.
+    await plugin.flush()
+    const events = await readEvents(dir)
+    assert.equal(events.length, 1)
+  })
+})
+
+test('several dreams leave several summaries, not one overwritten file', async () => {
+  await sandbox(async (dir) => {
+    const plugin = createLogger({ dir })
+    for (let i = 1; i <= 3; i++) {
+      const run = plugin.forRun()
+      await run.finish({ durationMs: i, outcome: `pass ${i}` })
+    }
+    const files = await readdir(join(dir, 'runs'))
+    assert.equal(files.length, 3, 'each dream must keep its own summary')
+    for (const f of files) {
+      const body = await readFile(join(dir, 'runs', f), 'utf8')
+      assert.match(body, /pass [123]/)
+    }
+  })
+})
+
+// ---------------------------------------------------------------- retention
+
+test('run summaries are pruned to maxRuns', async () => {
+  await sandbox(async (dir) => {
+    for (let i = 0; i < 12; i++) {
+      const log = createLogger({ dir, maxRuns: 5 })
+      await log.finish({ durationMs: 1, outcome: 'x' })
+    }
+    const files = await readdir(join(dir, 'runs'))
+    assert.equal(files.length, 5, 'summaries must not accumulate without bound')
+  })
+})
+
+test('pruning keeps the newest summaries', async () => {
+  await sandbox(async (dir) => {
+    // Ids sort by their time prefix, so the newest files sort last.
+    const ids = []
+    for (let i = 0; i < 6; i++) {
+      const log = createLogger({ dir, maxRuns: 2 })
+      ids.push(log.runId)
+      await log.finish({ durationMs: 1 })
+      // Ensure a distinct time prefix.
+      await new Promise((r) => setTimeout(r, 5))
+    }
+    const files = (await readdir(join(dir, 'runs'))).sort()
+    assert.equal(files.length, 2)
+    // The two newest ids must be the ones that survived.
+    const survivors = files.map((f) => f.replace(/\.md$/, ''))
+    assert.deepEqual(survivors, ids.slice(-2))
+  })
+})
