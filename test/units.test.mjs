@@ -6,6 +6,7 @@ import { join } from 'node:path'
 
 import { parseMemory, renderMemory, charCount, DEFAULT_HEADER } from '../lib/memory.js'
 import { ZSTD_AVAILABLE as ZSTD } from '../lib/transcripts.js'
+import { createRequire } from 'node:module'
 
 // ---------------------------------------------------------------- parsing
 
@@ -200,7 +201,7 @@ test('guard passes text through when scanning is disabled', async () => {
 
 test('decompressFrames handles multi-frame zstd', { skip: !ZSTD }, async () => {
   const { decompressFrames } = await import('../lib/transcripts.js')
-  const { zstdCompressSync } = await import('node:zlib')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
   const a = zstdCompressSync(Buffer.from('first\n'))
   const b = zstdCompressSync(Buffer.from('second\n'))
   const joined = Buffer.concat([a, b])
@@ -228,7 +229,7 @@ test('toConversation keeps user and assistant text only', async () => {
 
 test('readRecentSessions reads a synthetic session tree', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
-  const { zstdCompressSync } = await import('node:zlib')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
   const home = await mkdtemp(join(tmpdir(), 'memdream-sess-'))
   try {
     const dir = join(home, 'sessions', '--workspace--', 'session-abc')

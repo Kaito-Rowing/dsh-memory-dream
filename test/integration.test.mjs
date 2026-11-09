@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import { mkdtemp, rm, readFile, writeFile, mkdir, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { zstdCompressSync } from 'node:zlib'
+import { createRequire } from 'node:module'
+const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
 import { ZSTD_AVAILABLE as ZSTD } from '../lib/transcripts.js'
 
 let counter = 0
