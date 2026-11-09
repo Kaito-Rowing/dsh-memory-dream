@@ -239,6 +239,26 @@ node scripts/log-report.mjs ~/.dsh-memory-dream-logs --run run_x --json
 
 `dreams/YYYY-MM-DD.md` は**記憶の成果物**です。エージェントが自分について下した結論で、履歴として残し、後でエージェント自身が読みます。テレメトリログは**開発の成果物**です。プラグインが機械的に何をしたかを、人間がデバッグするために残します。書く場所もコードも別で、どちらも他方から導出されません。
 
+## マシン間でセッションを移す
+
+`scripts/migrate-session.mjs` は、1 つのセッションログを別のマシンにコピーし、
+ヘッダの絶対 `cwd` をそのマシンに存在するパスへ書き換えます。記録された cwd が
+存在しないセッションは再開できないので、これがログを可搬にする最小の変更です。
+
+```bash
+node scripts/migrate-session.mjs \
+  ~/.dsh/sessions/--old--/session-abc/session.v4.jsonl.zstd \
+  /tmp/session.v4.jsonl.zstd \
+  /home/you/project
+```
+
+厄介なのは物理フォーマットです。DSH は**最初の zstd フレームがちょうど 1 行**
+（ヘッダ）であることを検証し、そうでなければログを拒否します。そのためスクリプトは
+ファイル全体を 1 フレームに再エンコードせず、**ヘッダ単独のフレームと残りの
+フレームの 2 つ**を書きます。結果を
+`~/.dsh/sessions/<エンコードされた cwd>/<セッション id>/` に置き、
+`~/.dsh/storages/workspace.json` の対象ワークスペースの `sessionIds` に id を足します。
+
 ## データの安全性
 
 - **原子的な置換。** `MEMORY.md`、wiki ページ、夢の記録、指針は、同じディレクトリの一時ファイルに書いてから rename します。書き込み途中のクラッシュで既存ファイルが切り詰められることはありません。

@@ -274,6 +274,27 @@ itself, kept as history and readable by the agent later. The telemetry log is a
 debugging it. They are written to different places, by different code, and
 neither is derived from the other.
 
+## Moving a session between machines
+
+`scripts/migrate-session.mjs` copies one session log to another machine and
+rewrites the header's absolute `cwd` to a path that exists there. A session
+whose recorded cwd is missing cannot be resumed, so this is the minimum change
+that makes a log portable.
+
+```bash
+node scripts/migrate-session.mjs \
+  ~/.dsh/sessions/--old--/session-abc/session.v4.jsonl.zstd \
+  /tmp/session.v4.jsonl.zstd \
+  /home/you/project
+```
+
+The physical format is the part that bites: DSH validates that the **first
+zstd frame contains exactly one line**, the header, and refuses the log
+otherwise. The script therefore writes two frames — the header alone, then
+everything else — rather than re-encoding the whole file as one frame. Copy the
+result into `~/.dsh/sessions/<encoded-cwd>/<session-id>/` and add the id to the
+target workspace's `sessionIds` in `~/.dsh/storages/workspace.json`.
+
 ## Data safety
 
 - **Atomic replacement.** `MEMORY.md`, wiki pages, dream records and the synthesis are written to a temp file in the same directory and renamed into place, so a crash mid-write cannot truncate an existing file.
