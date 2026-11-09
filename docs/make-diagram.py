@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""dsh-memory-dream のアーキテクチャ図を SVG / PNG で出力する。"""
+"""Architecture diagram for dsh-memory-dream, matching the 0.2 implementation."""
 
 import matplotlib
 matplotlib.use("Agg")
@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import matplotlib.font_manager as fm
 
-# 日本語が出るフォントを探す（weight も確認）
 def pick_font():
     for name in ["Yu Gothic UI", "Yu Gothic", "Meiryo", "MS Gothic",
                  "BIZ UDGothic", "Noto Sans JP", "Noto Sans CJK JP"]:
@@ -19,10 +18,10 @@ def pick_font():
             continue
     return None
 
-JP_FONT = pick_font()
-if JP_FONT:
-    plt.rcParams["font.family"] = JP_FONT
-    plt.rcParams["font.sans-serif"] = [JP_FONT]
+JP = pick_font()
+if JP:
+    plt.rcParams["font.family"] = JP
+    plt.rcParams["font.sans-serif"] = [JP]
 plt.rcParams["svg.fonttype"] = "none"
 plt.rcParams["axes.unicode_minus"] = False
 
@@ -33,18 +32,20 @@ BLUE = "#4d6bfe"
 BLUE_L = "#ebf0ff"
 AMBER = "#b7791f"
 AMBER_L = "#fefcbf"
+GREEN = "#276749"
+GREEN_L = "#f0fff4"
 GRAY_L = "#f7fafc"
 GRAY_B = "#cbd5e0"
 
-fig, ax = plt.subplots(figsize=(11.5, 9), dpi=100)
+fig, ax = plt.subplots(figsize=(12.4, 9.6), dpi=100)
 fig.patch.set_facecolor(BG)
 ax.set_facecolor(BG)
-ax.set_xlim(0, 11.5)
-ax.set_ylim(0, 9)
+ax.set_xlim(0, 12.4)
+ax.set_ylim(0, 9.6)
 ax.axis("off")
 
 
-def box(x, y, w, h, title, sub, face=GRAY_L, edge=GRAY_B, title_color=INK, lw=1.4):
+def box(x, y, w, h, title, sub, face=GRAY_L, edge=GRAY_B, title_color=INK, lw=1.4, fs=12.5):
     ax.add_patch(FancyBboxPatch(
         (x, y), w, h,
         boxstyle="round,pad=0.02,rounding_size=0.12",
@@ -52,16 +53,16 @@ def box(x, y, w, h, title, sub, face=GRAY_L, edge=GRAY_B, title_color=INK, lw=1.
     ))
     ty = y + h - 0.30 if sub else y + h / 2
     ax.text(x + w / 2, ty, title, ha="center", va="top" if sub else "center",
-            fontsize=12.5, fontweight="bold", color=title_color, zorder=3)
+            fontsize=fs, fontweight="bold", color=title_color, zorder=3)
     if sub:
         ax.text(x + w / 2, y + h - 0.66, sub, ha="center", va="top",
-                fontsize=8.8, color=MUTED, zorder=3, linespacing=1.5)
+                fontsize=8.6, color=MUTED, zorder=3, linespacing=1.5)
 
 
 def arrow(p1, p2, label="", color=MUTED, ls="-", lw=1.7, rad=0.0,
-          lx=None, ly=None, fs=8.5, style="-|>"):
+          lx=None, ly=None, fs=8.5):
     ax.add_patch(FancyArrowPatch(
-        p1, p2, arrowstyle=style, mutation_scale=13,
+        p1, p2, arrowstyle="-|>", mutation_scale=13,
         linewidth=lw, color=color, linestyle=ls,
         connectionstyle=f"arc3,rad={rad}", zorder=1, shrinkA=3, shrinkB=3,
     ))
@@ -73,73 +74,88 @@ def arrow(p1, p2, label="", color=MUTED, ls="-", lw=1.7, rad=0.0,
                 bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec="none", alpha=0.97))
 
 
-# タイトル
-ax.text(0.5, 8.62, "dsh-memory-dream", fontsize=20, fontweight="bold", color=INK)
-ax.text(0.5, 8.24, "Layered agent memory with a nightly correcting pass",
+# Title
+ax.text(0.5, 9.20, "dsh-memory-dream", fontsize=20, fontweight="bold", color=INK)
+ax.text(0.5, 8.82, "Layered memory with a dream pass that checks memory against the conversation",
         fontsize=10.5, color=MUTED)
 
-# --- 注入層 ---
-box(0.5, 6.85, 4.7, 1.05, "MEMORY.md",
-    "index only · hard character cap",
-    face=BLUE_L, edge=BLUE, title_color=BLUE, lw=2.0)
+# --- injected layer ---
+box(0.5, 7.35, 5.2, 1.15, "MEMORY.md",
+    "index only · hard cap · injected every turn",
+    face=BLUE_L, edge=BLUE, title_color=BLUE, lw=2.2)
 
-box(6.1, 6.85, 4.9, 1.05, "prompt", "read on every turn",
+box(6.55, 7.35, 5.35, 1.15, "prompt", "systemPrompt.context, rendered per turn",
     face="#2d3748", edge="#2d3748", title_color="#ffffff")
-arrow((5.2, 7.37), (6.1, 7.37), color=BLUE, lw=2.4)
+arrow((5.7, 7.92), (6.55, 7.92), "injected", color=BLUE, lw=2.4, lx=6.12, ly=8.14)
 
-# --- 表現層 ---
-box(0.5, 5.2, 4.7, 1.05, "wiki/", "one page per topic · detail lives here")
+# --- wiki ---
+box(0.5, 5.55, 5.2, 1.15, "wiki/", "one page per topic · detail lives here")
 
-# --- ノート層 ---
-box(0.5, 3.55, 4.7, 1.05, "notes/", "YYYY-MM-DD.md · raw day-to-day")
+# --- notes ---
+box(0.5, 3.75, 5.2, 1.15, "notes/", "YYYY-MM-DD.md · what the agent recorded")
 
-# --- トランスクリプト ---
-box(0.5, 1.9, 4.7, 1.05, "transcripts", "~/.dsh/sessions/ · the session log")
+# --- transcripts ---
+box(0.5, 1.95, 5.2, 1.15, "transcripts", "~/.dsh/sessions/ · what was actually said",
+    face=GREEN_L, edge=GREEN, title_color=GREEN)
 
-# 左の縦の流れ（下から上へ）
-arrow((2.85, 3.55), (2.85, 5.2), "memory_wiki", color=MUTED, lx=4.05, ly=4.38)
-arrow((2.85, 1.9), (2.85, 3.55), "memory_note", color=MUTED, lx=4.05, ly=2.72)
+# left column flow
+arrow((3.1, 3.75), (3.1, 5.55), "memory_wiki", lx=4.35, ly=4.65)
+arrow((3.1, 1.95), (3.1, 3.75), "memory_note", lx=4.35, ly=2.85)
 
-# --- 夢の出力 ---
-box(6.1, 5.2, 4.9, 1.05, "dreams/",
-    "YYYY-MM-DD.md · historical record, never rewritten",
-    face=AMBER_L, edge=AMBER, title_color=AMBER)
+# --- dream outputs ---
+box(6.55, 5.55, 5.35, 1.15, "dreams/YYYY-MM-DD.md",
+    "history · appended to, never rewritten",
+    face=AMBER_L, edge=AMBER, title_color=AMBER, fs=11.5)
 
-box(6.1, 3.55, 4.9, 1.05, "SYNTHESIS.md",
+box(6.55, 3.75, 5.35, 1.15, "dreams/SYNTHESIS.md",
     "current guidance · rewritten freely",
-    face=AMBER_L, edge=AMBER, title_color=AMBER)
+    face=AMBER_L, edge=AMBER, title_color=AMBER, fs=11.5)
 
-# 夢 → 各層（左向き）
-arrow((6.1, 4.08), (5.2, 4.08), "correct", color=AMBER, lx=5.65, ly=4.34)
-arrow((6.1, 5.72), (5.2, 5.72), "promote one line", color=AMBER, lx=5.65, ly=5.46)
+# dream hub
+ax.text(9.22, 3.05, "dream", ha="center", va="center",
+        fontsize=12.5, fontweight="bold", color=AMBER, zorder=4)
+ax.text(9.22, 2.55, "verify memory against the transcripts,\nrecord what it cannot resolve",
+        ha="center", va="center", fontsize=8.8, color=MUTED, linespacing=1.6, zorder=4)
 
-# 夢の縦の流れ（上から下）
-arrow((8.55, 5.2), (8.55, 4.6), color=AMBER, lw=1.6)
-arrow((8.55, 3.55), (8.55, 3.2), color=AMBER, lw=1.6)
+# dream -> layers
+arrow((6.55, 6.12), (5.7, 6.12), "correct", color=AMBER, lx=6.12, ly=6.36)
+arrow((6.55, 4.32), (5.7, 4.32), "promote", color=AMBER, lx=6.12, ly=4.56)
+arrow((9.22, 5.55), (9.22, 4.90), color=AMBER, lw=1.6)
+arrow((9.22, 3.75), (9.22, 3.35), color=AMBER, lw=1.6)
 
-# 夢の中心は矢印の下に置く（ラベルと重ならないように）
-ax.text(8.55, 2.92, "dream", ha="center", va="center",
-        fontsize=12, fontweight="bold", color=AMBER, zorder=4)
-ax.text(8.55, 2.40, "verify what is written\nagainst the notes,\nthen correct it",
-        ha="center", va="center", fontsize=8.6, color=MUTED, linespacing=1.6, zorder=4)
+# transcripts feed the dream (the key 0.2 change).
+# Routed below the dream description so the label does not overlap it.
+ax.add_patch(FancyArrowPatch(
+    (5.7, 2.30), (9.22, 2.30), arrowstyle="-|>", mutation_scale=13,
+    linewidth=2.0, color=GREEN,
+    connectionstyle="arc3,rad=0.0", zorder=1, shrinkA=3, shrinkB=3,
+))
+ax.text(7.46, 2.08, "evidence", ha="center", va="center", fontsize=9,
+        color=GREEN, zorder=5,
+        bbox=dict(boxstyle="round,pad=0.3", fc=BG, ec="none", alpha=0.97))
 
-# 指針 → prompt（右端の縦線）
-arrow((11.0, 4.08), (11.0, 6.85), color=AMBER, ls=":", lw=1.8)
-ax.text(11.12, 5.5, "referenced", ha="center", va="center", fontsize=8.2,
+# synthesis -> prompt
+arrow((11.9, 4.32), (11.9, 7.35), color=AMBER, ls=":", lw=1.8)
+ax.text(12.02, 5.85, "referenced", ha="center", va="center", fontsize=8.2,
         color=AMBER, rotation=90, zorder=5,
         bbox=dict(boxstyle="round,pad=0.22", fc=BG, ec="none", alpha=0.97))
 
-# --- 注入スキャン ---
+# --- guarantees strip ---
 ax.add_patch(FancyBboxPatch(
-    (0.5, 0.62), 10.5, 0.66,
+    (0.5, 0.55), 11.4, 0.92,
     boxstyle="round,pad=0.02,rounding_size=0.1",
     linewidth=1.3, edgecolor=BLUE, facecolor=BLUE_L, zorder=2,
 ))
-ax.text(0.78, 0.95, "injection scan", fontsize=9.5, fontweight="bold",
+ax.text(0.78, 1.22, "guarantees", fontsize=9.5, fontweight="bold",
         color=BLUE, va="center", zorder=3)
-ax.text(2.55, 0.95,
-        "every read path is scanned entry by entry — a hit is replaced, not dropped",
-        fontsize=8.8, color=MUTED, va="center", zorder=3)
+ax.text(0.78, 0.86,
+        "atomic writes (temp + rename)   ·   one writer per root (in-process mutex + lock file)   ·   "
+        "path validation on every model-supplied name",
+        fontsize=8.6, color=MUTED, va="center", zorder=3)
+
+ax.text(0.78, 0.70,
+        "injection scan on every read path   ·   blocked entries are replaced, never deleted",
+        fontsize=8.6, color=MUTED, va="center", zorder=3)
 
 plt.tight_layout(pad=0.3)
 plt.savefig("docs/architecture.svg", format="svg", facecolor=BG,

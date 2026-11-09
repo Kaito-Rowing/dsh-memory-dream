@@ -16,9 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Prepare test stub for @deepseek-ai/dsh-tools
+      - name: Install the test stub for @deepseek-ai/dsh-tools
         run: node test/setup.mjs
-      - name: Copy plugin source next to tests
-        run: cp lib/index.js test/plugin.mjs
       - name: Run tests
-        run: node --test test/plugin.test.mjs
+        run: node --test test/units.test.mjs test/integration.test.mjs

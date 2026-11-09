@@ -1,5 +1,6 @@
 # dsh-memory-dream
-# 記憶階層プラグインを web プロファイルに挿す。
+# Mounts the memory hierarchy plugin. No configuration is required; every
+# default works on a fresh install.
 - insert:
     - id: memory-dream
       name: dsh-memory-dream

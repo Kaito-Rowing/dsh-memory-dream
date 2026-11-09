@@ -2,85 +2,104 @@
 
 English | [日本語](README.ja.md)
 
-Layered agent memory for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), with a nightly pass that **corrects** what the agent got wrong.
+Layered agent memory for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), with a dream pass that **checks memory against the actual conversation** and records what it cannot resolve.
 
-Most memory plugins help an agent remember more. This one is built around a different question: what should be allowed to persist, and how does the agent find out it was wrong?
+Most memory plugins help an agent remember more. This one starts from a different question: what should be allowed to persist, and how does the agent find out it was wrong?
 
-The design follows Anthropic's published account of agent memory as a hierarchy — *[The components of agent memory](https://www.anthropic.com/research/components-of-agent-memory)* (2026) — and the hard-cap mechanism from Hermes Agent's `MEMORY.md`.
+The design follows Anthropic's account of agent memory as a hierarchy — *[The components of agent memory](https://www.anthropic.com/research/components-of-agent-memory)* (2026) — and the hard-cap mechanism from Hermes Agent's `MEMORY.md`.
 
 ![Architecture](docs/architecture.svg)
 
-## The hierarchy
+## What it actually does
 
-```
-injected context   ~/.dsh/memory/MEMORY.md          index only, hard cap
-      ↕
-representations    ~/.dsh/memory/wiki/<topic>.md    detail, one topic per page
-      ↕
-notes              ~/.dsh/memory/notes/YYYY-MM-DD.md  raw day-to-day
-      ↕
-transcripts        ~/.dsh/sessions/                 the session log itself
-```
+Four layers, smallest and most expensive first:
 
-Plus two artifacts the dream pass writes:
+| Layer | Location | Role |
+|---|---|---|
+| injected | `~/.dsh/memory/MEMORY.md` | index of what is currently true, hard cap, read every turn |
+| wiki | `~/.dsh/memory/wiki/<topic>.md` | detail, one topic per page |
+| notes | `~/.dsh/memory/notes/YYYY-MM-DD.md` | what the agent recorded at the time |
+| transcripts | `~/.dsh/sessions/` | what was actually said |
 
-```
-dreams      ~/.dsh/memory/dreams/YYYY-MM-DD.md   historical record, never deleted
-synthesis   ~/.dsh/memory/dreams/SYNTHESIS.md    current guidance, rewritten
-```
+Two artifacts the dream writes:
 
-The point of the split: the injected layer stays small, and everything else is reachable but not paid for on every turn.
+| Artifact | Location | Role |
+|---|---|---|
+| dream record | `~/.dsh/memory/dreams/YYYY-MM-DD.md` | history — appended to, never rewritten |
+| synthesis | `~/.dsh/memory/dreams/SYNTHESIS.md` | current guidance — rewritten freely |
 
-## Two ideas worth stealing
+## The three ideas
 
 ### 1. The cap forces consolidation
 
-`MEMORY.md` has a character limit (default 4,000). When a write would exceed it, the `memory` tool rejects the write and returns every current entry:
+`MEMORY.md` has a character limit (default 4,000). A write that would exceed it is rejected, and every current entry comes back with the error:
 
 ```json
 {
   "success": false,
-  "error": "MEMORY.md would exceed its limit (4231/4000 chars, 231 over). ...",
+  "error": "MEMORY.md would exceed its limit (4231/4000 chars, 231 over). Retry as ONE operations batch ...",
   "current_entries": ["...", "..."],
   "usage": "4000/4000"
 }
 ```
 
-The limit is checked only against the **final result of a batch**, so the agent can remove or shorten stale entries and add the new one in a single `operations` call. It cannot dribble entries in and hope.
+The limit is checked only against the **final result of a batch**, so the agent can remove or shorten stale entries and add the new one in a single call. It cannot dribble entries in and hope.
 
-This is a forcing function, not a storage limit. An agent that never hits the cap is an agent that never consolidates.
+This is a forcing function, not a storage limit. An agent that never hits the cap is an agent that never merges anything.
 
-### 2. The dream corrects, it does not generate
+### 2. The dream reads the conversation, not just the notes
 
-`memory_dream` returns the current `MEMORY.md` and the last N days of notes as material, and the prompt tells the agent to **verify what is already written** rather than add new facts. The interesting output is a correction:
+`memory_dream` assembles material from four sources: the current `MEMORY.md`, the **actual session transcripts**, the dated notes, and prior dreams. The transcript section is the one that matters — without it the dream can only compare two summaries of the same conversation, which catches drift but not error.
 
-> The note says the deadline was the 7th; MEMORY.md says the 8th. The 8th came from a rebooking. Patching.
+Transcripts are read from `~/.dsh/sessions/` as multi-frame zstd JSONL. Only user and assistant text is kept; tool calls, results and injected context are dropped, because the dream is checking what was *said*, and tool output is exactly the untrusted material that should not be re-presented as evidence.
 
-Anthropic's Pokémon experiment is the clearest version of why this matters: an agent wrote down that a landmark was on the east side of a mountain when it was on the west. Uncorrected, it walked off a ledge three times and gave up. Corrected against the transcript, it went straight back in. Generation would not have caught that. Only checking would.
+The dream prompt is explicit about the limit of its authority:
+
+> - **Contradicted by the evidence** — patch it, and record what changed and why.
+> - **Unresolvable** — memory and evidence disagree and nothing decides between them. Do NOT pick a winner. Record the conflict in the dream and leave the entry as it is.
+>
+> A correction you cannot ground is a fabrication with better manners.
+
+Anthropic's Pokémon experiment is the clearest case for why this matters: an agent wrote that a landmark was on the east side of a mountain when it was on the west. Uncorrected, it walked off a ledge three times and gave up. Corrected against the transcript, it went straight back in. Generation would not have caught that. Only checking would.
+
+### 3. Memory is injected, not remembered-to-read
+
+`MEMORY.md` reaches the model through `ctx.systemPrompt.context`, so it is present on every turn without the agent having to decide to look. The wiki topic list rides along so the agent knows what detail exists and can read it on demand.
+
+Whether injection is possible depends on the composition. A tree without `dsh-system-prompt` — the `headless` profile, for one — has no prompt to contribute to. The plugin still loads and every tool works; `memory_status` reports the state:
+
+```
+injection   off — this composition has no systemPrompt service; memory is reachable only through the tools
+```
+
+This is deliberate. Declaring `systemPrompt` in `inject` would make it mandatory and the plugin would fail to activate in those compositions.
 
 ## Injection scanning
 
-Memory is read back into the prompt on later turns. That makes it an injection surface: whatever the agent picks up from a web page and writes into `MEMORY.md` becomes an instruction to its future self.
+Memory is read back into the prompt, which makes it an injection surface: whatever the agent picks up from a web page and writes into `MEMORY.md` becomes an instruction to its future self.
 
-Every read path scans entry by entry. A hit is replaced, not dropped:
+Every read path — the injected context, `memory_wiki` reads, dream material, transcripts — is scanned **entry by entry**. A blocking hit is replaced by a marker that names the pattern and says where the original still lives:
 
 ```
-[BLOCKED: MEMORY.md matched injection pattern (override, exfil-prompt).
-The text was not loaded. If you did not write this, check and delete the entry.]
+[BLOCKED: MEMORY.md entry 2 matched injection pattern(s) override, exfil-prompt.
+The original text is still on disk and was not loaded.
+Run memory_audit to see it, then rewrite or delete the entry.]
 ```
 
-Per-entry rather than per-file, deliberately: one poisoned entry should not cost you the whole store.
+Three decisions shape this:
 
-Detected: instruction overrides (EN/JA), role reassignment, system-prompt exfiltration, secret exfiltration, permission-grant claims, invisible/bidi characters.
+- **Per entry, not per file.** One poisoned entry should not cost the whole store.
+- **Replace, not delete.** The original text stays on disk. A false positive costs a visible marker, not a lost fact.
+- **Two severities.** `block` hides the text; `flag` only reports it, because the shape is ambiguous enough that hiding it would cost more than it saves.
 
-`memory_audit` scans every layer at once and can remove flagged `MEMORY.md` entries with `fix: true`.
+`memory_audit` scans every layer and shows the original text. `fix: true` removes flagged `MEMORY.md` entries; it never touches wiki pages or notes, which are the user's own record.
 
-**This is a tripwire, not a guarantee.** Regexy heuristics miss paraphrased attacks and will occasionally flag legitimate text (a note *about* injection techniques). The goal is noticing, not blocking.
+**This is a tripwire, not a guarantee.** Regex heuristics miss paraphrased attacks and will occasionally flag legitimate text — a note *about* injection techniques, for instance. The goal is noticing, not blocking.
 
 ## Install
 
 ```bash
-dsh plugin --profile web add github:OWNER/dsh-memory-dream
+dsh plugin --profile web add github:Kaito-Rowing/dsh-memory-dream
 ```
 
 Or from a local checkout:
@@ -96,11 +115,11 @@ Restart the profile. The plugin creates `~/.dsh/memory/` on first use.
 | Tool | What it does |
 |---|---|
 | `memory` | `add` / `patch` / `remove` against `MEMORY.md`. Enforces the cap. |
-| `memory_note` | Append to today's dated note. |
+| `memory_note` | Append to a dated note. |
 | `memory_wiki` | Read or write a topic page. Omit `content` to read. |
-| `memory_dream` | Return dream material; optionally write `SYNTHESIS.md`. |
-| `memory_status` | Usage, counts, and what exists. |
-| `memory_audit` | Scan all layers for injection patterns. |
+| `memory_dream` | Assemble dream material; optionally write the record and synthesis. |
+| `memory_status` | Usage, counts, and whether injection is active. |
+| `memory_audit` | Scan every layer for injection patterns. |
 
 ## Config
 
@@ -108,11 +127,19 @@ Restart the profile. The plugin creates `~/.dsh/memory/` on first use.
 - id: memory-dream
   name: dsh-memory-dream
   config:
-    memoryCharLimit: 4000   # cap on MEMORY.md
-    lookbackDays: 14        # how many days of notes the dream reads
-    memoryDir: null         # default: $DSH_HOME/memory
-    scanInjection: true     # set false to disable the scanner
+    memoryCharLimit: 4000        # cap on MEMORY.md
+    lookbackDays: 14             # window for notes and transcripts
+    memoryDir: null              # default: $DSH_HOME/memory
+    scanInjection: true          # scan memory before it reaches the model
+    inject: true                 # inject MEMORY.md every turn
+    injectTopics: true           # include the wiki topic list
+    transcripts: true            # read session transcripts for the dream
+    transcriptMaxChars: 40000    # text budget for transcripts
+    transcriptsSameWorkspace: true  # only sessions from the current workspace
+    language: en                 # tool text: en | ja
 ```
+
+Every default works on a fresh install. Invalid values fall back to the default rather than failing.
 
 ## Scheduling the dream
 
@@ -120,23 +147,39 @@ DSH's `schedule` service can deliver a prompt to a fresh session on a timer. Cre
 
 ```
 Run memory_dream. Read the material and verify what is already written
-rather than adding new facts. Patch entries that contradict the notes,
-move detail into memory_wiki, and remove what is stale. Then write today's
-dream: what you corrected, what is unresolved, and tomorrow's first move.
-Run memory_audit and investigate anything it flags.
+against the transcripts rather than adding new facts. Patch entries the
+evidence contradicts, move detail into memory_wiki, and remove what is
+stale. Where the evidence cannot settle a disagreement, record the conflict
+and leave the entry alone. Then write today's dream with the record
+parameter: what you corrected, what is unresolved, and tomorrow's first
+move. Run memory_audit and investigate anything it blocks.
 ```
 
 Nightly is a reasonable default. Anthropic notes that the right cadence is still an open question — if the dream keeps finding nothing, run it less often.
+
+## Data safety
+
+- **Atomic writes.** Every write goes to a temp file in the same directory and is renamed into place, so a crash mid-write cannot truncate an existing file.
+- **One writer per root.** An in-process mutex serializes writes exactly; a lock file covers two profiles sharing a home. A stale lock older than 30 seconds is broken rather than blocking forever.
+- **Path validation.** Every model-supplied name is validated before it becomes a path: dates must be real calendar dates (`2026-02-30` and `../../etc/passwd` both fail), topics must be kebab-case, and the resolved path is confirmed to stay under the memory root.
+- **Compatible with 0.1 data.** The 0.1 release wrote the entry separator as `§ ` prefixed to the following line. The parser recognizes both that shape and the current one, so an existing store keeps working.
 
 ## Design notes
 
 **Why a cap and not a token budget?** Characters are cheap to count, deterministic, and visible to the model in the usage line. A token budget would need the tokenizer at write time.
 
-**Why per-entry injection scanning?** Because a single bad entry is recoverable and a corrupted store is not. The blocked entry stays visible as a `[BLOCKED: ...]` marker so the agent can see something was removed and why.
+**Why does `memory_dream` return material instead of writing the dream itself?** Because the writing is the model's job, and the plugin should not pretend to do reasoning. The tool assembles inputs and provides a place to write; the prompt supplies the judgment.
 
 **Why separate `dreams/` from `SYNTHESIS.md`?** The dated dream is history — it should never be rewritten. The synthesis is current guidance — it should be rewritten whenever the picture changes. Collapsing them means either losing the trail or carrying stale instructions forever.
 
-**Why does `memory_dream` return material instead of writing the dream itself?** Because the writing is the model's job, and the plugin should not pretend to do reasoning. The tool assembles inputs and provides a place to write; the prompt supplies the judgment.
+**Why is a second dream on the same day appended, not overwritten?** Because a re-run is usually a correction of the first pass, and the first pass's conclusions are evidence about what was believed at the time.
+
+## Known limits
+
+- **Injection needs `dsh-system-prompt`.** Compositions without it (headless) get the tools but no automatic context. `memory_status` says so.
+- **Transcript reading is filesystem-level.** It reads the JSONL generations directly rather than going through `ctx.sessionQuery`, so a future format change would need a matching update. The reader is conservative — it skips unreadable frames and never writes.
+- **The scanner is heuristic.** See above.
+- **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter silently matches nothing and the dream falls back to no transcripts rather than the wrong ones.
 
 ## License
 

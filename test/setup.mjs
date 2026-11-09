@@ -1,16 +1,13 @@
 #!/usr/bin/env node
-// テスト用の defineTool スタブを node_modules に置く。
-// DSH 本体が提供するパッケージなので、リポジトリにはコミットしない。
+// Install a stub for @deepseek-ai/dsh-tools so the plugin can be imported
+// outside a running DSH. The real package is provided by the harness.
 import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const dir = join(import.meta.dirname, '..', 'node_modules', '@deepseek-ai', 'dsh-tools')
+const here = import.meta.dirname
+const dir = join(here, '..', 'node_modules', '@deepseek-ai', 'dsh-tools')
 await mkdir(dir, { recursive: true })
-await writeFile(
-  join(dir, 'index.mjs'),
-  'export function defineTool(def) { return def }\n',
-  'utf8',
-)
+await writeFile(join(dir, 'index.mjs'), 'export function defineTool(def) { return def }\n', 'utf8')
 await writeFile(
   join(dir, 'package.json'),
   JSON.stringify(
