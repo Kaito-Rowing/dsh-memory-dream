@@ -1,0 +1,5 @@
+# dsh-memory-dream
+# 記憶階層プラグインを web プロファイルに挿す。
+- insert:
+    - id: memory-dream
+      name: dsh-memory-dream

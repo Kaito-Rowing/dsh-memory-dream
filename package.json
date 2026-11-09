@@ -1,0 +1,44 @@
+{
+  "name": "dsh-memory-dream",
+  "version": "0.1.0",
+  "description": "Layered agent memory for DeepSeek Harness: a hard-capped MEMORY.md index, dated notes, topic wikis, and a nightly dream pass that corrects what the agent got wrong. Includes an injection scanner for memory read back into the prompt.",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "README.md",
+    "README.ja.md",
+    "docs/architecture.svg"
+  ],
+  "scripts": {
+    "test": "node test/setup.mjs && cp lib/index.js test/plugin.mjs && node --test test/plugin.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "memory",
+    "agent-memory",
+    "dreaming",
+    "memory-consolidation"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}
