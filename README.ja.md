@@ -1,6 +1,37 @@
 # dsh-memory-dream
 
+[![Tests](https://github.com/Kaito-Rowing/dsh-memory-dream/actions/workflows/test.yml/badge.svg)](https://github.com/Kaito-Rowing/dsh-memory-dream/actions/workflows/test.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 [English](README.md) | 日本語
+
+**DeepSeek公式ではないコミュニティ製プラグインです。** [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 向けの階層型エージェント記憶。dream パスで記憶を実際の会話と照合し、証拠で解決できない矛盾はそのまま残します。
+
+## まず使ってみる
+
+**必要な環境:** DeepSeek Harness と設定済みプロファイル（以下の例は `web`）、Node.js 20 以上。**zstd 圧縮されたセッションログの読み取りには Node.js 22.15 以上が必要**です。Node 20 でも記憶ツールは読み込めますが、トランスクリプトに基づく dream の検証は利用できません。
+
+~~~bash
+dsh plugin --profile web add github:Kaito-Rowing/dsh-memory-dream
+~~~
+
+対象プロファイルを再起動してください。その後、**DSH のエージェントとの会話で**次のように頼みます（ターミナル用コマンドではありません）。
+
+> `memory_status` を実行して、記憶の自動注入が有効か教えてください。
+
+続けて、秘密でない簡単な好みを `memory` ツールで保存してみてください。標準の保存先は `~/.dsh/memory/` です。`memory_dream` は**モデルが検証するための材料**を集めるツールであり、単体で推論したり定期実行したりするものではありません。詳しくは [dream の定期実行](#dream-を定期実行する) を参照してください。
+
+**プライバシー:** 記憶や会話ログには個人情報・機密情報が含まれ得ます。ファイルはローカルに保存されますが、モデルに注入される文章は DSH で設定したモデル提供元によって処理されます。`memory_audit` の `fix: true` など破壊的な操作を試す前に `~/.dsh/memory/` をバックアップしてください。正規表現による注入スキャンは安全性を保証しません。
+
+**ワークスペース間の分離:** 現状、指定ワークスペースのセッションが見つからない場合、**他のワークスペースの会話まで読み取る**フォールバックがあります。厳密な分離が必要なら、動作が変更されるまで `transcripts: false` を設定するか、DSH のホームを分けてください。詳しくは [既知の制限](#既知の制限) を参照してください。
+
+## ドキュメント案内
+
+- [記憶の4層](#実際に何をするか) · [インストール](#インストール) · [ツール一覧](#ツール) · [設定](#設定)
+- [dream の定期実行](#dream-を定期実行する) · [テレメトリ](#ローカル開発用テレメトリ) · [既知の制限](#既知の制限)
+- [コントリビューション](CONTRIBUTING.md) · [セキュリティ](SECURITY.md) · [変更履歴](CHANGELOG.md) · [ライセンス](LICENSE)
+
+## 設計の概要
 
 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) のための階層型エージェント記憶。**記憶を実際の会話と突き合わせて検証し**、決着できないものは決着させずに記録する dream パス付き。
 
@@ -295,3 +326,10 @@ node scripts/migrate-session.mjs \
 ## ライセンス
 
 MIT
+
+
+## サポートとリリース
+
+不具合や機能提案は、既存の報告を確認してから [GitHub Issues](https://github.com/Kaito-Rowing/dsh-memory-dream/issues) へお願いします。DSH と Node.js のバージョン、プロファイル、最小再現手順、伏字化済みのエラーを添えてください。**記憶ファイル、生の会話ログ、トークン、非公開のデバッグスナップショットは貼らないでください。** セキュリティに関する報告は公開 Issue ではなく [SECURITY.md](SECURITY.md) に従ってください。
+
+`package.json` のバージョン表記だけでは GitHub Release や npm 公開済みとは限りません。タグとリリースノートを作る前に [CONTRIBUTING.md](CONTRIBUTING.md) のチェックリストを確認してください。

@@ -1,6 +1,37 @@
 # dsh-memory-dream
 
+[![Tests](https://github.com/Kaito-Rowing/dsh-memory-dream/actions/workflows/test.yml/badge.svg)](https://github.com/Kaito-Rowing/dsh-memory-dream/actions/workflows/test.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 English | [日本語](README.ja.md)
+
+**Community plugin (not an official DeepSeek project).** Layered agent memory for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), with a dream pass that checks remembered claims against conversation transcripts and leaves unresolved conflicts unresolved.
+
+## Quick start
+
+**Requirements:** DeepSeek Harness with a configured profile (examples use `web`) and Node.js 20 or newer. **Node.js 22.15+ is required for zstd-compressed session transcript reading**; on Node 20, the memory tools can load, but transcript-backed dream verification is unavailable.
+
+~~~bash
+dsh plugin --profile web add github:Kaito-Rowing/dsh-memory-dream
+~~~
+
+Restart that DSH profile. In an **agent conversation** (not your shell), ask:
+
+> Run `memory_status` and tell me whether memory injection is enabled.
+
+Then try asking the agent to save a short, non-sensitive preference using the `memory` tool. The plugin creates its files in `~/.dsh/memory/` by default. `memory_dream` assembles evidence for the **model** to review; it does not independently perform model reasoning or run itself on a timer. See [scheduling](#scheduling-the-dream).
+
+**Privacy note:** Memory files and transcripts may contain personal or project-sensitive information. They are stored on your machine, but text injected into model context is processed by your configured DSH model provider. Back up `~/.dsh/memory/` before experimenting with destructive tools such as `memory_audit` with `fix: true`. The regex-based injection scanner is not a security guarantee.
+
+**Workspace scope:** When transcript filtering finds no matching sessions, the current implementation can fall back to reading sessions from **other workspaces**. For strict project isolation, set `transcripts: false` until this behavior is changed, or run separate DSH homes. See [known limits](#known-limits).
+
+## Documentation
+
+- [How the memory layers work](#what-it-actually-does) · [Install options](#install) · [Available tools](#tools) · [Configuration](#config)
+- [Dream scheduling](#scheduling-the-dream) · [Telemetry and local logs](#local-development-telemetry) · [Known limits](#known-limits)
+- [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md) · [Changelog](CHANGELOG.md) · [License](LICENSE)
+
+## Design overview
 
 Layered agent memory for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), with a dream pass that **checks memory against the actual conversation** and records what it cannot resolve.
 
@@ -331,3 +362,10 @@ target workspace's `sessionIds` in `~/.dsh/storages/workspace.json`.
 ## License
 
 MIT
+
+
+## Support and releases
+
+For reproducible defects or feature proposals, use [GitHub Issues](https://github.com/Kaito-Rowing/dsh-memory-dream/issues) after checking existing reports. Include your DSH version, Node version, profile type, minimal reproduction and redacted error output. **Do not post memory files, raw transcripts, tokens or private debug snapshots.** Security-sensitive reports should follow [SECURITY.md](SECURITY.md), not a public issue.
+
+The version in `package.json` is not proof of a published GitHub Release or npm release. For a public release, use a tagged version and release notes after the release checklist in [CONTRIBUTING.md](CONTRIBUTING.md).
