@@ -36,5 +36,5 @@ Keep changes focused, document user-facing behavior in both `README.md` and `REA
 - [ ] Check installation and removal on a clean profile with non-sensitive fixtures.
 - [ ] Verify `npm pack --dry-run` and that no logs, credentials, transcripts or generated files ship.
 - [ ] Update both READMEs, `CHANGELOG.md`, the package version, and the version constant in `lib/index.js`.
-- [ ] Review GitHub Actions status, create a version tag, and publish release notes only after checks pass.
+- [ ] Review GitHub Actions status, create a version tag, and publish release notes only after checks pass. Follow [RELEASING.md](RELEASING.md) for initial npm publication and future OIDC releases.
 - [ ] Publish to npm only if that is a deliberate, separately verified action.
