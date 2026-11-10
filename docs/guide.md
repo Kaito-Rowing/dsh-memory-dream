@@ -303,7 +303,7 @@ target workspace's `sessionIds` in `~/.dsh/storages/workspace.json`.
 - **Injection needs `dsh-system-prompt`.** Compositions without it (headless) get the tools but no automatic context. `memory_status` says so.
 - **Transcript reading is filesystem-level.** It reads the JSONL generations directly rather than going through `ctx.sessionQuery`, so a future format change would need a matching update. The reader is conservative — it skips unreadable frames and never writes.
 - **The scanner is heuristic.** See above.
-- **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter matches nothing — so the reader falls back to every workspace and says so in the dream material, rather than returning an empty result that looks like "there was nothing to read".
+- **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter can match nothing. The reader now preserves the workspace boundary and reports that no matching transcript evidence was available rather than reading conversations from other projects.
 - **The cross-process lock is advisory.** It is a lock file, not an OS advisory lock. It coordinates two processes that both use this plugin; it cannot stop an unrelated program from writing to the same files.
 
 ## License
