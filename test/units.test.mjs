@@ -293,7 +293,7 @@ test('readRecentSessions reads a synthetic session tree', { skip: !ZSTD }, async
   }
 })
 
-test('readRecentSessions falls back when the workspace filter matches nothing', { skip: !ZSTD }, async () => {
+test('readRecentSessions can explicitly opt in to cross-workspace fallback', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
   const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
   const home = await mkdtemp(join(tmpdir(), 'memdream-ws-'))
@@ -307,19 +307,45 @@ test('readRecentSessions falls back when the workspace filter matches nothing', 
       }) + '\n'
     await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
 
-    // A filter that matches nothing must not silently return an empty result:
-    // the dream would lose every transcript and compare memory to notes alone.
+    // Cross-workspace fallback is only available by explicit opt-in; the
+    // agent dream must not broaden the evidence request by default.
     const r = await readRecentSessions({
       home,
       since: '2000-01-01',
       workspace: '--some-other-place--',
+      fallbackToAll: true,
     })
     assert.equal(r.sessions.length, 1, 'must fall back to all workspaces')
     assert.equal(r.workspaceMatched, false, 'the fallback must be reported')
+    assert.equal(r.fallbackToAllUsed, true)
   } finally {
     await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
   }
 })
+test('readRecentSessions keeps workspace isolation by default', { skip: !ZSTD }, async () => {
+  const { readRecentSessions } = await import('../lib/transcripts.js')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
+  const home = await mkdtemp(join(tmpdir(), 'memdream-strict-ws-'))
+  try {
+    const dir = join(home, 'sessions', '--project-a--', 'session-secret')
+    await mkdir(dir, { recursive: true })
+    const body = JSON.stringify({
+      type: 'user/message',
+      data: { source: { kind: 'user' }, content: [{ type: 'text', text: 'project A confidential' }] },
+    }) + '\n'
+    await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
+
+    const r = await readRecentSessions({
+      home, since: '2000-01-01', workspace: '--project-b--',
+    })
+    assert.deepEqual(r.sessions, [], 'project A text must not be returned to project B')
+    assert.equal(r.workspaceMatched, false)
+    assert.equal(r.fallbackToAllUsed, false)
+  } finally {
+    await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
+  }
+})
+
 
 test('readRecentSessions does not fall back when the filter matches', { skip: !ZSTD }, async () => {
   const { readRecentSessions } = await import('../lib/transcripts.js')
