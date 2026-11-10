@@ -59,7 +59,7 @@
 <text x="804" y="499" fill="#CDD6E7" font-size="13">support / contradiction / unresolved</text>
 <text x="804" y="521" fill="#CDD6E7" font-size="13">No forced resolution without evidence</text>
 <!-- outcomes -->
-<path d="M896 566 V590 H650 V609 M1010 590 V609" stroke="#6274AD" fill="none" stroke-width="1.8" marker-end="url(#arrowB)"/>
+<path d="M896 566 V590 H650 V609 M896 590 H973 V609" stroke="#6274AD" fill="none" stroke-width="1.8" marker-end="url(#arrowB)"/>
 <rect x="504" y="616" width="291" height="42" rx="9" fill="#F4F2FF" stroke="#C7BEF5"/>
 <text x="649" y="642" text-anchor="middle" fill="#403985" font-size="13" font-weight="700">memory tools → edit index / wiki</text>
 <rect x="819" y="616" width="308" height="42" rx="9" fill="#EDF9F6" stroke="#AAE4D5"/>
