@@ -14,7 +14,7 @@ When reporting, share the minimal redacted reproduction, affected version, impac
 
 - The plugin processes agent-authored memory and potentially sensitive user/assistant conversation transcripts. Files stored locally are not equivalent to end-to-end privacy: injected or dream material may be sent to the configured model provider.
 - Prompt-injection scanning uses heuristics. It can miss malicious instructions and flag innocent text. Do not treat it as a security boundary.
-- With `transcriptsSameWorkspace: true`, the current transcript reader **falls back to other workspaces** if no sessions match the current workspace. Do not use this behavior where strict workspace isolation is required. Set `transcripts: false` or segregate DSH homes until fixed.
+- With `transcriptsSameWorkspace: true` (the default), transcript reading stays within the selected workspace; when no matching sessions exist it returns no transcript evidence rather than searching other projects. Setting `transcriptsSameWorkspace: false` intentionally allows all-workspace reading. Do not use that setting for sensitive project isolation.
 - The cross-process file lock is best-effort and may allow writes without a lock on timeout. Concurrent writes across profiles require care.
 - Debug snapshots, telemetry and DSH server logs may contain personal, operational, or authentication data. A token-only redaction regex does not safely anonymize them. Keep debugging artifacts private and perform a manual content review before sharing.
 - Back up memory data before using destructive operations such as `memory_audit` with `fix: true`.
