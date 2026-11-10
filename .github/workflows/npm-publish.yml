@@ -1,0 +1,53 @@
+name: Publish to npm (manual OIDC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing reviewed release tag, for example v0.3.1'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify tag format
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::Expected a semantic version tag such as v0.3.1"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+      - name: Use npm CLI compatible with OIDC
+        run: npm install --global 'npm@^11'
+      - name: Confirm checked-out version matches tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          node -e "const p=require('./package.json'); if ('v'+p.version !== process.env.TAG || p.name !== 'dsh-memory-dream') { console.error('Unexpected package/version'); process.exit(1) }"
+          test "$(git describe --tags --exact-match)" = "$TAG"
+      - name: Test
+        run: npm test
+      - name: Inspect tarball
+        run: npm pack --dry-run
+      - name: Publish with npm trusted publishing (OIDC)
+        run: npm publish --access public

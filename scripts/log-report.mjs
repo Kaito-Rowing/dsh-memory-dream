@@ -139,7 +139,7 @@ function summarise(e) {
       return (
         `memory=${e.memoryEntries}/${e.memoryChars}c notes=${e.notesRead} ` +
         `sessions=${e.sessionsRead} transcript=${e.transcriptChars}c ` +
-        `ws=${e.workspaceMatched === false ? 'FELL-BACK' : 'ok'}` +
+        `ws=${e.fallbackToAllUsed === true ? 'FELL-BACK' : e.workspaceMatched === false ? 'NO-MATCH' : 'ok'}` +
         (e.blockedEntries ? ` blocked=${e.blockedEntries}` : '')
       )
     case 'dream.record':

@@ -99,11 +99,11 @@ See the [full configuration reference and design notes](docs/guide.md#config) fo
 
 ## Important boundaries
 
-- **Workspace isolation:** If no session matches the current workspace, transcript reading can **fall back to other workspaces**. For strict isolation, set `transcripts: false` or use separate DSH homes until this is changed.
+- **Workspace isolation:** When `transcriptsSameWorkspace: true` (the default), transcript reading **does not widen to other workspaces** if no sessions match. Dream review then reports that evidence is missing. Set `transcriptsSameWorkspace: false` only when intentionally reviewing all workspaces.
 - **Privacy:** Memory and transcripts can contain sensitive information. Files live locally, but content passed to an agent is processed by your configured model provider. Don't publish raw debug snapshots.
 - **Safety:** The prompt-injection scanner is heuristic, not a security guarantee. Cross-process locking is best-effort. Back up memory before using `memory_audit` with `fix: true`.
 
-Read [Security](SECURITY.md), [Known limitations](docs/guide.md#known-limits), and [Contributing](CONTRIBUTING.md) before deployment or contributions.
+Read [Security](SECURITY.md), [Known limitations](docs/guide.md#known-limits), and [Contributing](CONTRIBUTING.md) before deployment or contributions. Maintainers: [release and npm publishing guide](RELEASING.md).
 
 ---
 

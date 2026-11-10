@@ -41,5 +41,18 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "author": "Kaito-Rowing",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kaito-Rowing/dsh-memory-dream.git"
+  },
+  "homepage": "https://github.com/Kaito-Rowing/dsh-memory-dream#readme",
+  "bugs": {
+    "url": "https://github.com/Kaito-Rowing/dsh-memory-dream/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   }
 }

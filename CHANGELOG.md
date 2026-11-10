@@ -6,6 +6,9 @@ Notable changes to dsh-memory-dream. Versions refer to the source package; publi
 
 ### Documentation and release readiness
 
+- Prepared npm package metadata, a maintainer publishing guide, a manual OIDC workflow for future npm releases, and DSH community announcement drafts.
+- Made workspace-scoped transcript reads fail closed by default; no implicit cross-project fallback when matching sessions are absent.
+
 - Added a short installation and verification path in both languages.
 - Documented Node.js zstd requirements, privacy expectations and cross-workspace transcript fallback.
 - Added contributor, security and maintainer release guidance.

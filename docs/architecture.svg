@@ -65,6 +65,6 @@
 <rect x="819" y="616" width="308" height="42" rx="9" fill="#EDF9F6" stroke="#AAE4D5"/>
 <text x="973" y="642" text-anchor="middle" fill="#176F65" font-size="13" font-weight="700">dream record / synthesis → write</text>
 <text x="65" y="641" fill="#7A879C" font-size="11.5">* Transcript support needs Node 22.15+.</text>
-<text x="65" y="657" fill="#7A879C" font-size="11.5">Workspace filtering may fall back to all workspaces.</text>
+<text x="65" y="657" fill="#7A879C" font-size="11.5">Workspace filtering stays isolated by default.</text>
 </g>
 </svg>

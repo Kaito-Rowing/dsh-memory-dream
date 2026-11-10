@@ -210,13 +210,13 @@ test('finish writes a human summary', async () => {
   })
 })
 
-test('summary reports a workspace fallback', () => {
+test('summary reports a strict workspace miss', () => {
   const body = renderSummary({
     runId: 'run_x',
     startedAt: Date.now(),
     summary: { workspaceMatched: false },
   })
-  assert.match(body, /matched nothing, fell back to all/)
+  assert.match(body, /no matching sessions \(isolated\)/)
 })
 
 test('summary lists warnings', () => {
