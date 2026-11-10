@@ -4,11 +4,16 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [20, 22, 24]
     steps:
@@ -16,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Install the test stub for @deepseek-ai/dsh-tools
-        run: node test/setup.mjs
-      - name: Run tests
-        run: node --test test/units.test.mjs test/integration.test.mjs
+      - name: Run complete test suite
+        run: npm test
+      - name: Check package contents
+        run: npm pack --dry-run
