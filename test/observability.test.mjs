@@ -218,7 +218,9 @@ test('a workspace fallback is visible in the log', { skip: !ZSTD }, async () => 
 
     const ev = await events(logDir)
     const material = ev.find((e) => e.type === 'dream.material')
-    assert.equal(material.workspaceMatched, false, 'the fallback must be recorded')
+    assert.equal(material.workspaceMatched, false, 'the workspace miss must be recorded')
+    assert.equal(material.fallbackToAllUsed, false, 'other projects must not be read')
+    assert.equal(material.sessionsRead, 0, 'no outside-workspace session should be used')
   })
 })
 
