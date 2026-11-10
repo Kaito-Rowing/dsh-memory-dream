@@ -2,7 +2,7 @@
 
 [← README に戻る](../README.ja.md) · [English](guide.md)
 
-Reference documentation for **dsh-memory-dream**. The root README is intentionally brief; the configuration, trade-offs, operational details and design notes live here.
+**dsh-memory-dream** の詳しい技術資料です。トップのREADMEは導入と全体像に絞り、設定、制限事項、運用、設計の背景はこちらにまとめています。
 
 ---
 
