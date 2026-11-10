@@ -1,409 +1,70 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="922.8pt" height="721.2pt" viewBox="0 0 922.8 721.2" xmlns="http://www.w3.org/2000/svg" version="1.1">
- <metadata>
-  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-   <cc:Work>
-    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-09T16:50:12.108126</dc:date>
-    <dc:format>image/svg+xml</dc:format>
-    <dc:creator>
-     <cc:Agent>
-      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
-     </cc:Agent>
-    </dc:creator>
-   </cc:Work>
-  </rdf:RDF>
- </metadata>
- <defs>
-  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
- </defs>
- <g id="figure_1">
-  <g id="patch_1">
-   <path d="M 0 721.2 
-L 922.8 721.2 
-L 922.8 0 
-L 0 0 
-z
-" style="fill: #ffffff"/>
-  </g>
-  <g id="axes_1">
-   <g id="patch_2">
-    <path d="M 428.643526 137.91 
-Q 456.036328 137.91 480.745848 137.91 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #4d6bfe; stroke-width: 2.4; stroke-linecap: round"/>
-    <path d="M 475.545848 135.31 
-L 480.745848 137.91 
-L 475.545848 140.51 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #4d6bfe; stroke: #4d6bfe; stroke-width: 2.4; stroke-linecap: round"/>
-   </g>
-   <g id="patch_3">
-    <path d="M 239.7 432.544379 
-Q 239.7 371.305701 239.7 311.967681 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #718096; stroke-width: 1.7; stroke-linecap: round"/>
-    <path d="M 237.1 317.167681 
-L 239.7 311.967681 
-L 242.3 317.167681 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #718096; stroke: #718096; stroke-width: 1.7; stroke-linecap: round"/>
-   </g>
-   <g id="patch_4">
-    <path d="M 239.7 561.019379 
-Q 239.7 499.780701 239.7 440.442681 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #718096; stroke-width: 1.7; stroke-linecap: round"/>
-    <path d="M 237.1 445.642681 
-L 239.7 440.442681 
-L 242.3 445.642681 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #718096; stroke: #718096; stroke-width: 1.7; stroke-linecap: round"/>
-   </g>
-   <g id="patch_5">
-    <path d="M 483.429054 266.385 
-Q 456.036253 266.385 430.544109 266.385 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #b7791f; stroke-width: 1.7; stroke-linecap: round"/>
-    <path d="M 435.744109 268.985 
-L 430.544109 266.385 
-L 435.744109 263.785 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #b7791f; stroke: #b7791f; stroke-width: 1.7; stroke-linecap: round"/>
-   </g>
-   <g id="patch_6">
-    <path d="M 483.429054 394.86 
-Q 456.036253 394.86 430.544109 394.86 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #b7791f; stroke-width: 1.7; stroke-linecap: round"/>
-    <path d="M 435.744109 397.46 
-L 430.544109 394.86 
-L 435.744109 392.26 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #b7791f; stroke: #b7791f; stroke-width: 1.7; stroke-linecap: round"/>
-   </g>
-   <g id="patch_7">
-    <path d="M 677.37871 310.067467 
-Q 677.37871 330.264539 677.37871 348.672756 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #b7791f; stroke-width: 1.6; stroke-linecap: round"/>
-    <path d="M 679.97871 343.472756 
-L 677.37871 348.672756 
-L 674.77871 343.472756 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #b7791f; stroke: #b7791f; stroke-width: 1.6; stroke-linecap: round"/>
-   </g>
-   <g id="patch_8">
-    <path d="M 677.37871 438.544427 
-Q 677.37871 449.820499 677.37871 459.307716 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #b7791f; stroke-width: 1.6; stroke-linecap: round"/>
-    <path d="M 679.97871 454.107716 
-L 677.37871 459.307716 
-L 674.77871 454.107716 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #b7791f; stroke: #b7791f; stroke-width: 1.6; stroke-linecap: round"/>
-   </g>
-   <g id="patch_9">
-    <path d="M 428.641911 539.0375 
-Q 551.509221 539.0375 672.140463 539.0375 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke: #276749; stroke-width: 2; stroke-linecap: round"/>
-    <path d="M 666.940463 536.4375 
-L 672.140463 539.0375 
-L 666.940463 541.6375 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #276749; stroke: #276749; stroke-width: 2; stroke-linecap: round"/>
-   </g>
-   <g id="patch_10">
-    <path d="M 869.041935 391.860335 
-Q 869.041935 286.725597 869.041935 183.60332 
-" clip-path="url(#pe5a7cc4a2a)" style="fill: none; stroke-dasharray: 1.8,2.97; stroke-dashoffset: 0; stroke: #b7791f; stroke-width: 1.8; stroke-linecap: round"/>
-    <path d="M 866.441935 188.80332 
-L 869.041935 183.60332 
-L 871.641935 188.80332 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #b7791f; stroke-dasharray: 1.8,2.97; stroke-dashoffset: 0; stroke: #b7791f; stroke-width: 1.8; stroke-linecap: round"/>
-   </g>
-   <g id="patch_11">
-    <path d="M 60.909677 180.02125 
-L 418.490323 180.02125 
-Q 427.072258 180.02125 427.072258 171.45625 
-L 427.072258 103.65 
-Q 427.072258 95.085 418.490323 95.085 
-L 60.909677 95.085 
-Q 52.327742 95.085 52.327742 103.65 
-L 52.327742 171.45625 
-Q 52.327742 180.02125 60.909677 180.02125 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #ebf0ff; stroke: #4d6bfe; stroke-width: 2.2; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_12">
-    <path d="M 493.582258 180.02125 
-L 861.890323 180.02125 
-Q 870.472258 180.02125 870.472258 171.45625 
-L 870.472258 103.65 
-Q 870.472258 95.085 861.890323 95.085 
-L 493.582258 95.085 
-Q 485.000323 95.085 485.000323 103.65 
-L 485.000323 171.45625 
-Q 485.000323 180.02125 493.582258 180.02125 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #2d3748; stroke: #2d3748; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_13">
-    <path d="M 60.909677 308.49625 
-L 418.490323 308.49625 
-Q 427.072258 308.49625 427.072258 299.93125 
-L 427.072258 232.125 
-Q 427.072258 223.56 418.490323 223.56 
-L 60.909677 223.56 
-Q 52.327742 223.56 52.327742 232.125 
-L 52.327742 299.93125 
-Q 52.327742 308.49625 60.909677 308.49625 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #f7fafc; stroke: #cbd5e0; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_14">
-    <path d="M 60.909677 436.97125 
-L 418.490323 436.97125 
-Q 427.072258 436.97125 427.072258 428.40625 
-L 427.072258 360.6 
-Q 427.072258 352.035 418.490323 352.035 
-L 60.909677 352.035 
-Q 52.327742 352.035 52.327742 360.6 
-L 52.327742 428.40625 
-Q 52.327742 436.97125 60.909677 436.97125 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #f7fafc; stroke: #cbd5e0; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_15">
-    <path d="M 60.909677 565.44625 
-L 418.490323 565.44625 
-Q 427.072258 565.44625 427.072258 556.88125 
-L 427.072258 489.075 
-Q 427.072258 480.51 418.490323 480.51 
-L 60.909677 480.51 
-Q 52.327742 480.51 52.327742 489.075 
-L 52.327742 556.88125 
-Q 52.327742 565.44625 60.909677 565.44625 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #f0fff4; stroke: #276749; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_16">
-    <path d="M 493.582258 308.49625 
-L 861.890323 308.49625 
-Q 870.472258 308.49625 870.472258 299.93125 
-L 870.472258 232.125 
-Q 870.472258 223.56 861.890323 223.56 
-L 493.582258 223.56 
-Q 485.000323 223.56 485.000323 232.125 
-L 485.000323 299.93125 
-Q 485.000323 308.49625 493.582258 308.49625 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #fefcbf; stroke: #b7791f; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_17">
-    <path d="M 493.582258 436.97125 
-L 861.890323 436.97125 
-Q 870.472258 436.97125 870.472258 428.40625 
-L 870.472258 360.6 
-Q 870.472258 352.035 861.890323 352.035 
-L 493.582258 352.035 
-Q 485.000323 352.035 485.000323 360.6 
-L 485.000323 428.40625 
-Q 485.000323 436.97125 493.582258 436.97125 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #fefcbf; stroke: #b7791f; stroke-width: 1.4; stroke-linejoin: miter"/>
-   </g>
-   <g id="patch_18">
-    <path d="M 59.479355 665.37125 
-L 863.320645 665.37125 
-Q 870.472258 665.37125 870.472258 658.23375 
-L 870.472258 603.98875 
-Q 870.472258 596.85125 863.320645 596.85125 
-L 59.479355 596.85125 
-Q 52.327742 596.85125 52.327742 603.98875 
-L 52.327742 658.23375 
-Q 52.327742 665.37125 59.479355 665.37125 
-z
-" clip-path="url(#pe5a7cc4a2a)" style="fill: #ebf0ff; stroke: #4d6bfe; stroke-width: 1.3; stroke-linejoin: miter"/>
-   </g>
-   <g id="text_1">
-    <text style="font-weight: 700; font-size: 20px; font-family: 'Yu Gothic UI'; text-anchor: start; fill: #1a202c" x="53.758065" y="46.55" transform="rotate(-0 53.758065 46.55)">dsh-memory-dream</text>
-   </g>
-   <g id="text_2">
-    <text style="font-size: 10.5px; font-family: 'Yu Gothic UI'; text-anchor: start; fill: #718096" x="53.758065" y="73.6725" transform="rotate(-0 53.758065 73.6725)">Layered memory with a dream pass that checks memory against the conversation</text>
-   </g>
-   <g id="text_3">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #4d6bfe" x="239.7" y="127.178906" transform="rotate(-0 239.7 127.178906)">MEMORY.md</text>
-   </g>
-   <g id="text_4">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="239.7" y="151.844674" transform="rotate(-0 239.7 151.844674)">index only · hard cap · injected every turn</text>
-   </g>
-   <g id="text_5">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #ffffff" x="677.73629" y="127.025342" transform="rotate(-0 677.73629 127.025342)">prompt</text>
-   </g>
-   <g id="text_6">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="677.73629" y="151.844674" transform="rotate(-0 677.73629 151.844674)">systemPrompt.context, rendered per turn</text>
-   </g>
-   <g id="text_7">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #1a202c" x="239.7" y="255.653906" transform="rotate(-0 239.7 255.653906)">wiki/</text>
-   </g>
-   <g id="text_8">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="239.7" y="280.319674" transform="rotate(-0 239.7 280.319674)">one page per topic · detail lives here</text>
-   </g>
-   <g id="text_9">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #1a202c" x="239.7" y="383.975342" transform="rotate(-0 239.7 383.975342)">notes/</text>
-   </g>
-   <g id="text_10">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="239.7" y="408.794674" transform="rotate(-0 239.7 408.794674)">YYYY-MM-DD.md · what the agent recorded</text>
-   </g>
-   <g id="text_11">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #276749" x="239.7" y="512.523828" transform="rotate(-0 239.7 512.523828)">transcripts</text>
-   </g>
-   <g id="text_12">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="239.7" y="537.269674" transform="rotate(-0 239.7 537.269674)">~/.dsh/sessions/ · what was actually said</text>
-   </g>
-   <g id="text_13">
-    <text style="font-weight: 700; font-size: 11.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #b7791f" x="677.73629" y="254.913594" transform="rotate(-0 677.73629 254.913594)">dreams/YYYY-MM-DD.md</text>
-   </g>
-   <g id="text_14">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="677.73629" y="280.319674" transform="rotate(-0 677.73629 280.319674)">history · appended to, never rewritten</text>
-   </g>
-   <g id="text_15">
-    <text style="font-weight: 700; font-size: 11.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #b7791f" x="677.73629" y="383.388594" transform="rotate(-0 677.73629 383.388594)">dreams/SYNTHESIS.md</text>
-   </g>
-   <g id="text_16">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="677.73629" y="408.840361" transform="rotate(-0 677.73629 408.840361)">current guidance · rewritten freely</text>
-   </g>
-   <g id="text_17">
-    <text style="font-weight: 700; font-size: 9.5px; font-family: 'Yu Gothic UI'; text-anchor: start; fill: #4d6bfe" x="73.782581" y="618.462896" transform="rotate(-0 73.782581 618.462896)">guarantees</text>
-   </g>
-   <g id="text_18">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: start; fill: #718096" x="73.782581" y="644.034687" transform="rotate(-0 73.782581 644.034687)">atomic writes (temp + rename)   ·   one writer per root (in-process mutex + lock file)   ·   path validation on every model-supplied name</text>
-   </g>
-   <g id="text_19">
-    <text style="font-size: 8.6px; font-family: 'Yu Gothic UI'; text-anchor: start; fill: #718096" x="73.782581" y="655.409" transform="rotate(-0 73.782581 655.409)">injection scan on every read path   ·   blocked entries are replaced, never deleted</text>
-   </g>
-   <g id="text_20">
-    <text style="font-weight: 700; font-size: 12.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #b7791f" x="677.37871" y="488.817896" transform="rotate(-0 677.37871 488.817896)">dream</text>
-   </g>
-   <g id="text_21">
-    <text style="font-size: 8.8px; font-family: 'Yu Gothic UI'; fill: #718096" transform="translate(604.52021 516.855625)">verify memory against the transcripts,</text>
-    <text style="font-size: 8.8px; font-family: 'Yu Gothic UI'; fill: #718096" transform="translate(620.968647 531.006437)">record what it cannot resolve</text>
-   </g>
-   <g id="text_22">
-    <g id="patch_19">
-     <path d="M 440.863475 128.903906 
-L 470.493944 128.903906 
-Q 473.043944 128.903906 473.043944 126.353906 
-L 473.043944 118.061094 
-Q 473.043944 115.511094 470.493944 115.511094 
-L 440.863475 115.511094 
-Q 438.313475 115.511094 438.313475 118.061094 
-L 438.313475 126.353906 
-Q 438.313475 128.903906 440.863475 128.903906 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #4d6bfe" x="455.67871" y="124.35375" transform="rotate(-0 455.67871 124.35375)">injected</text>
-   </g>
-   <g id="text_23">
-    <g id="patch_20">
-     <path d="M 304.5202 378.002656 
-L 353.670122 378.002656 
-Q 356.220122 378.002656 356.220122 375.452656 
-L 356.220122 367.159844 
-Q 356.220122 364.609844 353.670122 364.609844 
-L 304.5202 364.609844 
-Q 301.9702 364.609844 301.9702 367.159844 
-L 301.9702 375.452656 
-Q 301.9702 378.002656 304.5202 378.002656 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="329.095161" y="373.4525" transform="rotate(-0 329.095161 373.4525)">memory_wiki</text>
-   </g>
-   <g id="text_24">
-    <g id="patch_21">
-     <path d="M 303.204028 506.425444 
-L 354.986294 506.425444 
-Q 357.536294 506.425444 357.536294 503.875444 
-L 357.536294 495.687056 
-Q 357.536294 493.137056 354.986294 493.137056 
-L 303.204028 493.137056 
-Q 300.654028 493.137056 300.654028 495.687056 
-L 300.654028 503.875444 
-Q 300.654028 506.425444 303.204028 506.425444 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #718096" x="329.095161" y="501.875288" transform="rotate(-0 329.095161 501.875288)">memory_note</text>
-   </g>
-   <g id="text_25">
-    <g id="patch_22">
-     <path d="M 442.644491 255.793525 
-L 468.712928 255.793525 
-Q 471.262928 255.793525 471.262928 253.243525 
-L 471.262928 245.266475 
-Q 471.262928 242.716475 468.712928 242.716475 
-L 442.644491 242.716475 
-Q 440.094491 242.716475 440.094491 245.266475 
-L 440.094491 253.243525 
-Q 440.094491 255.793525 442.644491 255.793525 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #b7791f" x="455.67871" y="251.454707" transform="rotate(-0 455.67871 251.454707)">correct</text>
-   </g>
-   <g id="text_26">
-    <g id="patch_23">
-     <path d="M 439.397889 384.351616 
-L 471.95953 384.351616 
-Q 474.50953 384.351616 474.50953 381.801616 
-L 474.50953 373.658384 
-Q 474.50953 371.108384 471.95953 371.108384 
-L 439.397889 371.108384 
-Q 436.847889 371.108384 436.847889 373.658384 
-L 436.847889 381.801616 
-Q 436.847889 384.351616 439.397889 384.351616 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.5px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #b7791f" x="455.67871" y="379.846616" transform="rotate(-0 455.67871 379.846616)">promote</text>
-   </g>
-   <g id="text_27">
-    <g id="patch_24">
-     <path d="M 533.929385 561.718428 
-L 569.09126 561.718428 
-Q 571.79126 561.718428 571.79126 559.018428 
-L 571.79126 550.461572 
-Q 571.79126 547.761572 569.09126 547.761572 
-L 533.929385 547.761572 
-Q 531.229385 547.761572 531.229385 550.461572 
-L 531.229385 559.018428 
-Q 531.229385 561.718428 533.929385 561.718428 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 9px; font-family: 'Yu Gothic UI'; text-anchor: middle; fill: #276749" x="551.510323" y="557.124385" transform="rotate(-0 551.510323 557.124385)">evidence</text>
-   </g>
-   <g id="text_28">
-    <g id="patch_25">
-     <path d="M 883.369557 304.995437 
-L 883.369557 266.317062 
-Q 883.369557 264.513062 881.565557 264.513062 
-L 873.682185 264.513062 
-Q 871.878185 264.513062 871.878185 266.317062 
-L 871.878185 304.995437 
-Q 871.878185 306.799437 873.682185 306.799437 
-L 881.565557 306.799437 
-Q 883.369557 306.799437 883.369557 304.995437 
-z
-" style="fill: #ffffff; opacity: 0.97"/>
-    </g>
-    <text style="font-size: 8.2px; font-family: 'Yu Gothic UI'; fill: #b7791f" transform="translate(879.839873 304.995437) rotate(-90)">referenced</text>
-   </g>
-  </g>
- </g>
- <defs>
-  <clipPath id="pe5a7cc4a2a">
-   <rect x="18" y="18" width="886.8" height="685.2"/>
-  </clipPath>
- </defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+<title id="title">dsh-memory-dream architecture</title>
+<desc id="desc">Two distinct flows: each turn the capped MEMORY.md index and wiki topic list can be injected into prompt context when the system prompt service exists. On demand, memory_dream gathers memory, sessions, notes, and prior dreams. The agent reviews material, uses memory tools for edits, and can write dream records or synthesis. Review is not automatic.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F6F8FD"/><stop offset="1" stop-color="#EDF3FA"/></linearGradient>
+  <marker id="arrowB" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#6274AD" stroke-width="1.5"/></marker>
+  <marker id="arrowG" markerWidth="8" markerHeight="8" refX="5" refY="4" orient="auto"><path d="M1 1 L6 4 L1 7" fill="none" stroke="#158B7B" stroke-width="1.5"/></marker>
+</defs>
+<rect width="1200" height="720" rx="16" fill="url(#bg)"/>
+<g font-family="Inter, Segoe UI, Arial, sans-serif">
+<text x="48" y="51" fill="#536585" font-size="12" font-weight="700" letter-spacing="2.2">ARCHITECTURE / TWO DIFFERENT PATHS</text>
+<text x="48" y="93" fill="#1A2945" font-size="32" font-weight="750">Stored memory and evidence-based review</text>
+<text x="49" y="121" fill="#5F708A" font-size="15">The plugin supplies storage and evidence. The agent makes the decisions.</text>
+<!-- Turn-by-turn injection lane -->
+<rect x="40" y="152" width="1120" height="194" rx="17" fill="#FFFFFF" stroke="#DAE3F1"/>
+<rect x="59" y="170" width="100" height="23" rx="11.5" fill="#EAE7FF"/>
+<text x="109" y="186" text-anchor="middle" font-size="11" font-weight="700" fill="#5548AB" letter-spacing=".6">EACH TURN</text>
+<text x="171" y="186" fill="#75839A" font-size="12">only when the DSH systemPrompt service is present</text>
+<rect x="67" y="217" width="286" height="93" rx="12" fill="#F4F2FF" stroke="#ADA3EE" stroke-width="1.5"/>
+<text x="89" y="247" fill="#353064" font-size="19" font-weight="750">MEMORY.md</text>
+<text x="89" y="269" fill="#646581" font-size="13">4,000-char cap by default</text>
+<text x="89" y="288" fill="#646581" font-size="13">+ wiki topic index</text>
+<path d="M367 263 H426" stroke="#6274AD" stroke-width="2" fill="none" marker-end="url(#arrowB)"/>
+<text x="395" y="249" text-anchor="middle" font-size="11" fill="#60719F">inject</text>
+<rect x="443" y="217" width="292" height="93" rx="12" fill="#EAF1FF" stroke="#93B1E9" stroke-width="1.5"/>
+<text x="466" y="247" fill="#1D477E" font-size="18" font-weight="750">Prompt context</text>
+<text x="466" y="269" fill="#5A7495" font-size="13">via systemPrompt.context</text>
+<text x="466" y="288" fill="#5A7495" font-size="13">guarded before injection</text>
+<path d="M750 263 H808" stroke="#6274AD" stroke-width="2" fill="none" marker-end="url(#arrowB)"/>
+<rect x="825" y="217" width="303" height="93" rx="12" fill="#1C2947" stroke="#1C2947"/>
+<text x="850" y="247" fill="#F4F7FF" font-size="19" font-weight="750">Agent turn</text>
+<text x="850" y="269" fill="#C2CBE0" font-size="13">Relevant index already in context</text>
+<text x="850" y="288" fill="#C2CBE0" font-size="13">wiki details fetched on demand</text>
+<!-- On-demand review lane -->
+<rect x="40" y="368" width="1120" height="313" rx="17" fill="#FFFFFF" stroke="#DAE3F1"/>
+<rect x="59" y="386" width="119" height="23" rx="11.5" fill="#DDF7F1"/>
+<text x="118" y="402" text-anchor="middle" font-size="11" font-weight="700" fill="#0C7C68" letter-spacing=".6">ON DEMAND</text>
+<text x="192" y="402" fill="#75839A" font-size="12">memory_dream assembles material; it does not run or reason by itself</text>
+<!-- Source cards -->
+<g font-size="13" font-weight="700">
+<rect x="64" y="434" width="160" height="63" rx="10" fill="#F6F4FF" stroke="#C5BDF1"/>
+<text x="82" y="459" fill="#463F86">MEMORY.md</text><text x="82" y="478" font-size="11" font-weight="400" fill="#7B769C">current claims</text>
+<rect x="238" y="434" width="160" height="63" rx="10" fill="#EDF9F6" stroke="#AAE4D5"/>
+<text x="256" y="459" fill="#0F7568">sessions/</text><text x="256" y="478" font-size="11" font-weight="400" fill="#5A8A80">conversation text*</text>
+<rect x="64" y="510" width="160" height="63" rx="10" fill="#F2F6FC" stroke="#CDDBE9"/>
+<text x="82" y="535" fill="#405B7C">notes/</text><text x="82" y="554" font-size="11" font-weight="400" fill="#758BA4">dated context</text>
+<rect x="238" y="510" width="160" height="63" rx="10" fill="#F2F6FC" stroke="#CDDBE9"/>
+<text x="256" y="535" fill="#405B7C">past dreams</text><text x="256" y="554" font-size="11" font-weight="400" fill="#758BA4">prior decisions</text>
+</g>
+<path d="M409 500 H451" stroke="#158B7B" stroke-width="2" fill="none" marker-end="url(#arrowG)"/>
+<rect x="468" y="444" width="240" height="119" rx="13" fill="#E4F7F3" stroke="#7FCBBA" stroke-width="1.8"/>
+<text x="490" y="473" fill="#146E64" font-size="18" font-weight="750">memory_dream</text>
+<text x="490" y="495" fill="#477C75" font-size="12.5">collects + scans material</text>
+<path d="M489 518 H687" stroke="#A8D8CE" stroke-width="1"/>
+<text x="490" y="539" fill="#386F64" font-size="12">returns evidence to the model</text>
+<path d="M723 500 H764" stroke="#158B7B" stroke-width="2" fill="none" marker-end="url(#arrowG)"/>
+<rect x="781" y="444" width="346" height="119" rx="13" fill="#1C2947" stroke="#1C2947"/>
+<text x="804" y="474" fill="#FFFFFF" font-size="18" font-weight="750">Agent reviews the evidence</text>
+<text x="804" y="499" fill="#CDD6E7" font-size="13">support / contradiction / unresolved</text>
+<text x="804" y="521" fill="#CDD6E7" font-size="13">No forced resolution without evidence</text>
+<!-- outcomes -->
+<path d="M896 566 V590 H650 V609 M896 590 H973 V609" stroke="#6274AD" fill="none" stroke-width="1.8" marker-end="url(#arrowB)"/>
+<rect x="504" y="616" width="291" height="42" rx="9" fill="#F4F2FF" stroke="#C7BEF5"/>
+<text x="649" y="642" text-anchor="middle" fill="#403985" font-size="13" font-weight="700">memory tools → edit index / wiki</text>
+<rect x="819" y="616" width="308" height="42" rx="9" fill="#EDF9F6" stroke="#AAE4D5"/>
+<text x="973" y="642" text-anchor="middle" fill="#176F65" font-size="13" font-weight="700">dream record / synthesis → write</text>
+<text x="65" y="641" fill="#7A879C" font-size="11.5">* Transcript support needs Node 22.15+.</text>
+<text x="65" y="657" fill="#7A879C" font-size="11.5">Workspace filtering may fall back to all workspaces.</text>
+</g>
 </svg>

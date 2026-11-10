@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+<title id="title">dsh-memory-dream — Make memory accountable</title>
+<desc id="desc">A restrained dark illustration of a capped memory index, transcripts, and notes converging on evidence-based memory review. Community plugin for DeepSeek Harness.</desc>
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#10182D"/><stop offset="1" stop-color="#080E1B"/></linearGradient>
+  <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#B1A6FF"/><stop offset="1" stop-color="#6DE6CD"/></linearGradient>
+  <linearGradient id="card" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1B2743"/><stop offset="1" stop-color="#131E34"/></linearGradient>
+  <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="#8A98B5" stroke-opacity=".075" stroke-width="1"/></pattern>
+  <filter id="glow"><feGaussianBlur stdDeviation="24"/></filter>
+</defs>
+<rect width="1200" height="400" rx="18" fill="url(#bg)"/>
+<rect width="1200" height="400" rx="18" fill="url(#grid)"/>
+<circle cx="969" cy="207" r="147" fill="#766DDE" opacity=".11" filter="url(#glow)"/>
+<path d="M 45 40 H 1155" stroke="#33405D" stroke-opacity=".55"/>
+<g transform="translate(48 59)" fill="none" stroke="#B1A6FF" stroke-width="2.4" stroke-linejoin="round">
+  <rect x="0" y="10" width="25" height="30" rx="4" opacity=".48"/>
+  <rect x="7" y="5" width="25" height="30" rx="4" opacity=".75"/>
+  <rect x="14" y="0" width="25" height="30" rx="4" fill="#222E50"/>
+  <path d="M 21 11 H 32 M 21 17 H 29" stroke-width="1.8"/>
+</g>
+<text x="105" y="81" fill="#DCE5FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="1.5">DSH / MEMORY DREAM</text>
+<rect x="48" y="123" width="45" height="4" rx="2" fill="url(#accent)"/>
+<text x="47" y="194" fill="#FFFFFF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="56" font-weight="750" letter-spacing="-2">Make memory</text>
+<text x="47" y="260" fill="url(#accent)" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="56" font-weight="750" letter-spacing="-2">accountable.</text>
+<text x="50" y="302" fill="#BCC9E1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19">A small index. Real conversation evidence.</text>
+<text x="50" y="329" fill="#BCC9E1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19">No invented certainty.</text>
+<text x="49" y="371" fill="#8597B5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="12" letter-spacing="2">PERSIST  /  VERIFY  /  REVISE</text>
+<!-- Evidence cards, deliberately conceptual rather than a fake UI screenshot -->
+<g font-family="Inter, Segoe UI, Arial, sans-serif">
+ <rect x="665" y="79" width="255" height="74" rx="12" fill="url(#card)" stroke="#495D89"/>
+ <rect x="686" y="100" width="29" height="29" rx="6" fill="#343D70"/>
+ <path d="M693 108h15m-15 6h12m-12 6h14" stroke="#C3BBFF" stroke-width="2" stroke-linecap="round"/>
+ <text x="729" y="111" fill="#EBEDFF" font-size="16" font-weight="700">MEMORY.md</text>
+ <text x="729" y="132" fill="#99AAC7" font-size="12">Capped, persistent index</text>
+
+ <rect x="705" y="168" width="255" height="74" rx="12" fill="url(#card)" stroke="#495D89"/>
+ <rect x="726" y="188" width="29" height="29" rx="6" fill="#245F65"/>
+ <path d="M733 201h15m-15 6h10" stroke="#84ECD5" stroke-width="2" stroke-linecap="round"/>
+ <text x="769" y="202" fill="#EBEDFF" font-size="16" font-weight="700">SESSIONS</text>
+ <text x="769" y="222" fill="#99AAC7" font-size="12">What was actually said</text>
+
+ <rect x="666" y="258" width="255" height="74" rx="12" fill="url(#card)" stroke="#495D89"/>
+ <rect x="687" y="278" width="29" height="29" rx="6" fill="#41446D"/>
+ <path d="M694 290h15m-15 6h9" stroke="#B9B5F9" stroke-width="2" stroke-linecap="round"/>
+ <text x="730" y="293" fill="#EBEDFF" font-size="16" font-weight="700">NOTES</text>
+ <text x="730" y="313" fill="#99AAC7" font-size="12">Dated context, held separately</text>
+</g>
+<path d="M920 116 H977 Q996 116 996 138 V182 M960 205 H975 M921 295 H977 Q996 295 996 273 V226" fill="none" stroke="#7487B4" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="1018" cy="205" r="67" fill="#17213B" stroke="#7481DD" stroke-width="1.8"/>
+<circle cx="1018" cy="205" r="53" fill="none" stroke="#7DE4D2" stroke-opacity=".35" stroke-dasharray="2 7" stroke-width="2"/>
+<path d="M994 205 l16 16 32-35" fill="none" stroke="#8EF1DC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1018" y="301" text-anchor="middle" fill="#CDD7F1" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="13" letter-spacing="1.3">VERIFY, DON'T GUESS</text>
+</svg>
