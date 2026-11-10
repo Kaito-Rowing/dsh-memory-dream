@@ -103,7 +103,7 @@ See the [full configuration reference and design notes](docs/guide.md#config) fo
 - **Privacy:** Memory and transcripts can contain sensitive information. Files live locally, but content passed to an agent is processed by your configured model provider. Don't publish raw debug snapshots.
 - **Safety:** The prompt-injection scanner is heuristic, not a security guarantee. Cross-process locking is best-effort. Back up memory before using `memory_audit` with `fix: true`.
 
-Read [Security](SECURITY.md), [Known limitations](docs/guide.md#known-limits), and [Contributing](CONTRIBUTING.md) before deployment or contributions.
+Read [Security](SECURITY.md), [Known limitations](docs/guide.md#known-limits), and [Contributing](CONTRIBUTING.md) before deployment or contributions. Maintainers: [release and npm publishing guide](RELEASING.md).
 
 ---
 
