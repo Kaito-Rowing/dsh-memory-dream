@@ -65,7 +65,7 @@ dsh plugin --profile web add github:Kaito-Rowing/dsh-memory-dream
 
 | ツール | できること |
 |---|---|
-| `memory` | 索引への追加・修正・削除（ひとつのoperationsバッチで処理） |
+| `memory` | 索引への追加・修正・削除（ひとつのoperationsバッチで処理）。`patch` はエントリ全体の置換なので、断片ではなく置換後の全文を渡す |
 | `memory_note` | 日付つきノートへ追記 |
 | `memory_wiki` | トピックページを読み取り・全文置換 |
 | `memory_dream` | 検証材料を集め、任意でdream記録・指針を書き込み |

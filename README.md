@@ -65,7 +65,7 @@ The paths above are relative to `~/.dsh/` by default. `MEMORY.md` is not an unli
 
 | Tool | Use it for |
 |---|---|
-| `memory` | Add, patch, or remove index entries in **one atomic operations batch** |
+| `memory` | Add, patch, or remove index entries in **one atomic operations batch**. `patch` replaces the whole entry, so pass the full replacement text, not a fragment |
 | `memory_note` | Append a dated working note |
 | `memory_wiki` | Read or replace a topic page |
 | `memory_dream` | Gather evidence; optionally write a dated dream record and synthesis |
