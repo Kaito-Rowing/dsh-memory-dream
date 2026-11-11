@@ -22,7 +22,7 @@ test('parse: header only', () => {
 })
 
 test('parse: entries separated by a § line', () => {
-  const r = parseMemory('# M\n\n<!-- c -->\n\nfirst\n\n§\n\nsecond')
+  const r = parseMemory('# MEMORY.md\n\n<!-- c -->\n\nfirst\n\n§\n\nsecond')
   assert.deepEqual(r.entries, ['first', 'second'])
 })
 
@@ -37,7 +37,7 @@ test('parse: an entry starting with # is not absorbed into the header', () => {
 
 test('parse: a § inside an entry body is not a separator', () => {
   // Regression: splitting on /\n§\s*/ treated "A § B" as two entries.
-  const r = parseMemory('# M\n\n<!-- c -->\n\nA § B in one entry\n\n§\n\nC')
+  const r = parseMemory('# MEMORY.md\n\n<!-- c -->\n\nA § B in one entry\n\n§\n\nC')
   assert.equal(r.entries.length, 2)
   assert.match(r.entries[0], /A § B/)
 })
@@ -49,12 +49,12 @@ test('parse: an unterminated comment does not erase the entries', () => {
 })
 
 test('parse: consecutive separators do not create empty entries', () => {
-  const r = parseMemory('# M\n\nA\n\n§\n\n§\n\nB')
+  const r = parseMemory('# MEMORY.md\n\nA\n\n§\n\n§\n\nB')
   assert.deepEqual(r.entries, ['A', 'B'])
 })
 
 test('parse: multiline entry stays one entry', () => {
-  const r = parseMemory('# M\n\nline one\nline two\n\n§\n\nother')
+  const r = parseMemory('# MEMORY.md\n\nline one\nline two\n\n§\n\nother')
   assert.equal(r.entries.length, 2)
   assert.match(r.entries[0], /line one\nline two/)
 })
@@ -62,17 +62,17 @@ test('parse: multiline entry stays one entry', () => {
 test('parse: legacy separator format (v0.1) is split, not merged', () => {
   // v0.1 wrote the separator prefixed to the next line rather than on its own
   // line. Those files are still on disk; they must split, not merge.
-  const r = parseMemory('# M\n\n<!-- c -->\n\nfact one\n§ fact two\n§ fact three')
+  const r = parseMemory('# MEMORY.md\n\n<!-- c -->\n\nfact one\n§ fact two\n§ fact three')
   assert.deepEqual(r.entries, ['fact one', 'fact two', 'fact three'])
 })
 
 test('parse: mixed legacy and current separators', () => {
-  const r = parseMemory('# M\n\n<!-- c -->\n\nfact one\n§ fact two\n\n§\n\nfact three')
+  const r = parseMemory('# MEMORY.md\n\n<!-- c -->\n\nfact one\n§ fact two\n\n§\n\nfact three')
   assert.deepEqual(r.entries, ['fact one', 'fact two', 'fact three'])
 })
 
 test('parse: a § in the middle of a line is text, not a separator', () => {
-  const r = parseMemory('# M\n\n<!-- c -->\n\nthe range is § 5 to § 9')
+  const r = parseMemory('# MEMORY.md\n\n<!-- c -->\n\nthe range is § 5 to § 9')
   assert.equal(r.entries.length, 1)
   assert.match(r.entries[0], /§ 5 to § 9/)
 })
@@ -80,9 +80,9 @@ test('parse: a § in the middle of a line is text, not a separator', () => {
 test('render/parse round-trips', () => {
   const cases = [
     { header: DEFAULT_HEADER, entries: [] },
-    { header: '# M', entries: ['a'] },
-    { header: '# M', entries: ['a', 'b', 'c'] },
-    { header: '# M', entries: ['multi\nline', 'with § inside'] },
+    { header: '# MEMORY.md', entries: ['a'] },
+    { header: '# MEMORY.md', entries: ['a', 'b', 'c'] },
+    { header: '# MEMORY.md', entries: ['multi\nline', 'with § inside'] },
     { header: '', entries: ['no header'] },
   ]
   for (const c of cases) {
@@ -410,6 +410,50 @@ test('readRecentSessions respects the since filter', { skip: !ZSTD }, async () =
     const future = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
     const r = await readRecentSessions({ home, since: future })
     assert.equal(r.sessions.length, 0)
+  } finally {
+    await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
+  }
+})
+
+// ---------------------------------------------------------------- header safety
+
+test('parse: an arbitrary leading heading is content, not a header', () => {
+  // Regression: a first entry beginning with `#` was taken for the document
+  // title, stripped from the entry, and written back that way.
+  const r = parseMemory('# Project Alpha\n\nOwner: Alice\n')
+  assert.equal(r.header, '')
+  assert.equal(r.entries.length, 1)
+  assert.match(r.entries[0], /Project Alpha/)
+  assert.match(r.entries[0], /Owner: Alice/)
+})
+
+test('parse: a heading-only entry is not mistaken for a header', () => {
+  const r = parseMemory('# Project Alpha\n')
+  assert.equal(r.entries.length, 1)
+  assert.match(r.entries[0], /Project Alpha/)
+})
+
+test('readRecentSessions truncation stays within maxChars', { skip: !ZSTD }, async () => {
+  const { readRecentSessions } = await import('../lib/transcripts.js')
+  const { zstdCompressSync } = createRequire(import.meta.url)('node:zlib')
+  const home = await mkdtemp(join(tmpdir(), 'memdream-budget-'))
+  try {
+    const dir = join(home, 'sessions', '--w--', 'session-long')
+    await mkdir(dir, { recursive: true })
+    const events = [
+      {
+        type: 'user/message',
+        data: { source: { kind: 'user' }, content: [{ type: 'text', text: 'x'.repeat(2000) }] },
+      },
+    ]
+    const body = events.map((e) => JSON.stringify(e)).join('\n') + '\n'
+    await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
+
+    const r = await readRecentSessions({ home, since: '2000-01-01', maxChars: 100 })
+    assert.equal(r.truncated, true)
+    const total = r.sessions.reduce((n, s) => n + s.text.length, 0)
+    assert.ok(total <= 100, `returned ${total} chars against a 100 char budget`)
+    assert.match(r.sessions[0].text, /truncated/)
   } finally {
     await rm(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {})
   }
