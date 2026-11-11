@@ -378,3 +378,19 @@ test('pruning keeps the newest summaries', async () => {
     assert.deepEqual(survivors, ids.slice(-2))
   })
 })
+
+test('rotation accounts for a logfile that already exists at startup', async () => {
+  // A restarted process used to count only its own bytes, so an oversized
+  // log never rotated and kept growing across short-lived sessions.
+  await sandbox(async (dir) => {
+    const existing = `${'x'.repeat(399)}\n`
+    await writeFile(join(dir, 'events.jsonl'), existing)
+
+    const log = createLogger({ dir, maxBytes: 300 })
+    log.event('test.event', { a: 1 })
+    await log.flush()
+
+    const rotated = (await readdir(dir)).filter((f) => f.startsWith('events.jsonl.'))
+    assert.equal(rotated.length, 1, 'the pre-existing size must count toward rotation')
+  })
+})

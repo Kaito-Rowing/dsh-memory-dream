@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtemp, rm, readFile, readdir, mkdir, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, readFile, readdir, mkdir, writeFile, utimes } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createRequire } from 'node:module'
@@ -158,7 +158,9 @@ test('a dream run can be reconstructed from the log', { skip: !ZSTD }, async () 
     const p = await boot({ home, config: { log: true, logDir, transcriptsSameWorkspace: false } })
 
     await p.call('memory', { operations: [{ action: 'add', content: 'deploy target is staging' }] })
-    await p.call('memory_note', { text: 'we discussed the deploy' })
+    // Dated inside the replayed window: a backdated dream must not read a note
+    // written after the day it is reviewing.
+    await p.call('memory_note', { text: 'we discussed the deploy', date: '2026-11-08' })
 
     const dir = join(home, 'sessions', '--w--', 'session-a')
     await mkdir(dir, { recursive: true })
@@ -167,7 +169,10 @@ test('a dream run can be reconstructed from the log', { skip: !ZSTD }, async () 
         type: 'user/message',
         data: { source: { kind: 'user' }, content: [{ type: 'text', text: 'deploy to staging' }] },
       }) + '\n'
-    await writeFile(join(dir, 'session.v4.jsonl.zstd'), zstdCompressSync(Buffer.from(body)))
+    const sessionFile = join(dir, 'session.v4.jsonl.zstd')
+    await writeFile(sessionFile, zstdCompressSync(Buffer.from(body)))
+    // The session date comes from mtime; put it inside the window too.
+    await utimes(sessionFile, new Date('2026-11-08T12:00:00Z'), new Date('2026-11-08T12:00:00Z'))
 
     await p.call('memory_dream', { date: '2026-11-09', record: '## corrected\nnothing' })
     await settle()
@@ -509,5 +514,22 @@ test('a stopped logger does not change tool results', async () => {
     assert.equal(r.success, true)
     const text = await p.injected()
     assert.match(text, /survives/)
+  })
+})
+
+test('a refused log dir stays empty even when a dream finishes', async () => {
+  // `finish()` writes runs/<runId>.md. It has to obey the same refusal as
+  // event writes, or the "nothing inside a git worktree" promise is false.
+  await sandbox(async (home) => {
+    await mkdir(join(home, 'repo', '.git'), { recursive: true })
+    const logDir = join(home, 'repo', 'logs')
+    const p = await boot({ home, config: { log: true, logDir } })
+
+    await new Promise((r) => setTimeout(r, 80))
+    await p.call('memory_dream', { date: '2026-11-09', record: '## pass' })
+    await settle()
+
+    const files = await readdir(logDir).catch(() => [])
+    assert.deepEqual(files, [], 'no run summary may land in a refused log dir')
   })
 })

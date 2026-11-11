@@ -120,3 +120,44 @@ test('a process writing while another rotates does not fail', async () => {
     assert.equal(bad, 0)
   })
 })
+
+test('two processes booting a fresh home do not clobber each other', async () => {
+  // Regression: first-run initialization was check-then-write, so the slower
+  // process could replace a MEMORY.md the faster one had just filled.
+  const indexPath = join(here, '..', 'lib', 'index.js')
+  const indexUrl = `file://${indexPath.replace(/\\/g, '/')}`
+  const script = `
+import { apply } from ${JSON.stringify(indexUrl)}
+const [home, tag] = process.argv.slice(2)
+process.env.DSH_HOME = home
+const tools = new Map()
+apply(
+  { tools: { register: (t) => tools.set(t.name, t) } },
+  {},
+)
+await tools.get('memory').execute(
+  { operations: [{ action: 'add', content: 'from-' + tag }] },
+  { signal: new AbortController().signal },
+)
+process.exit(0)
+`
+
+  await sandbox(async (dir) => {
+    for (let round = 0; round < 3; round++) {
+      const home = join(dir, `home-${round}`)
+      const scriptPath = join(dir, `boot-${round}.mjs`)
+      await writeFile(scriptPath, script, 'utf8')
+
+      const run = (tag) =>
+        new Promise((resolve, reject) => {
+          const child = spawn(process.execPath, [scriptPath, home, tag], { stdio: 'inherit' })
+          child.on('error', reject)
+          child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`child ${tag} exited ${code}`))))
+        })
+      await Promise.all([run('a'), run('b')])
+
+      const text = await readFile(join(home, 'memory', 'MEMORY.md'), 'utf8')
+      assert.match(text, /from-[ab]/, 'initialization must not leave an empty memory behind')
+    }
+  })
+})

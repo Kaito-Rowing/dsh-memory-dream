@@ -101,7 +101,7 @@ See the [full configuration reference and design notes](docs/guide.md#config) fo
 
 - **Workspace isolation:** When `transcriptsSameWorkspace: true` (the default), transcript reading **does not widen to other workspaces** if no sessions match. Dream review then reports that evidence is missing. Set `transcriptsSameWorkspace: false` only when intentionally reviewing all workspaces.
 - **Privacy:** Memory and transcripts can contain sensitive information. Files live locally, but content passed to an agent is processed by your configured model provider. Don't publish raw debug snapshots.
-- **Safety:** The prompt-injection scanner is heuristic, not a security guarantee. Cross-process locking is best-effort; a write that loses the race fails instead of overwriting. `memory_audit` with `fix: true` removes entries with **blocking** findings only — flag-only entries are kept.
+- **Safety:** The prompt-injection scanner is heuristic, not a security guarantee. A mutation that cannot take the cross-process lock fails with a retryable error instead of proceeding unprotected. `memory_audit` with `fix: true` removes entries with **blocking** findings only — flag-only entries are kept.
 
 Read [Security](SECURITY.md), [Known limitations](docs/guide.md#known-limits), and [Contributing](CONTRIBUTING.md) before deployment or contributions. Maintainers: [release and npm publishing guide](RELEASING.md).
 
