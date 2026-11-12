@@ -194,7 +194,7 @@ node scripts/log-report.mjs ~/.dsh-memory-dream-logs --run run_x --json
 - `dream.record` / `dream.synthesis` — 書いた文字数と行数、追記だったか
 - `audit` — 層ごとの検出数、重大度、発火したパターン
 - `inject.render` — 注入した文脈のサイズとエントリ数
-- `lock.degraded` — プロセス間ロックなしで進んだ書き込み
+- `lock.degraded` — プロセス間ロックを取れず拒否した書き込み（ファイルパス付き）
 - `wiki.read` / `wiki.write` / `note.append` — トピック、サイズ、ブロックの有無
 
 ### 記録しないもの

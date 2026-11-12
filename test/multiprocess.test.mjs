@@ -161,3 +161,73 @@ process.exit(0)
     }
   })
 })
+
+test('a process never observes a half-written initial MEMORY.md', async () => {
+  // Regression: creating the destination with 'wx' and writing into it
+  // exposed an empty file to the loser of the create race, which then treated
+  // initialization as complete and read a partial document.
+  const indexPath = join(here, '..', 'lib', 'index.js')
+  const indexUrl = `file://${indexPath.replace(/\\/g, '/')}`
+
+  // B waits for the file to appear and reports what it saw the moment it did.
+  const reader = `
+import { apply } from ${JSON.stringify(indexUrl)}
+const [home] = process.argv.slice(2)
+process.env.DSH_HOME = home
+const { readFile } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const file = join(home, 'memory', 'MEMORY.md')
+const deadline = Date.now() + 5000
+let seen = null
+while (Date.now() < deadline) {
+  try {
+    seen = await readFile(file, 'utf8')
+    break
+  } catch {
+    await new Promise((r) => setTimeout(r, 1))
+  }
+}
+if (seen === null) { console.log('NEVER'); process.exit(0) }
+console.log(seen.length === 0 ? 'EMPTY' : seen.startsWith('# MEMORY.md') ? 'COMPLETE' : 'PARTIAL')
+process.exit(0)
+`
+
+  await sandbox(async (dir) => {
+    for (let round = 0; round < 5; round++) {
+      const home = join(dir, `home-${round}`)
+      const scriptPath = join(dir, `reader-${round}.mjs`)
+      await writeFile(scriptPath, reader, 'utf8')
+
+      const spawnReader = () =>
+        new Promise((resolve, reject) => {
+          const child = spawn(process.execPath, [scriptPath, home], { stdio: ['ignore', 'pipe', 'inherit'] })
+          let out = ''
+          child.stdout.on('data', (d) => (out += d))
+          child.on('error', reject)
+          child.on('exit', () => resolve(out.trim()))
+        })
+
+      const writer = `
+import { apply } from ${JSON.stringify(indexUrl)}
+process.env.DSH_HOME = ${JSON.stringify(home)}
+apply({ tools: { register: () => {} } }, {})
+await new Promise((r) => setTimeout(r, 200))
+process.exit(0)
+`
+      const writerPath = join(dir, `writer-${round}.mjs`)
+      await writeFile(writerPath, writer, 'utf8')
+
+      const [observed] = await Promise.all([
+        spawnReader(),
+        new Promise((resolve, reject) => {
+          const child = spawn(process.execPath, [writerPath], { stdio: 'inherit' })
+          child.on('error', reject)
+          child.on('exit', resolve)
+        }),
+      ])
+
+      assert.notEqual(observed, 'EMPTY', 'the destination must never be visible empty')
+      assert.notEqual(observed, 'PARTIAL', 'the destination must never be visible half-written')
+    }
+  })
+})

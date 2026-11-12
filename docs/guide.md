@@ -305,6 +305,8 @@ target workspace's `sessionIds` in `~/.dsh/storages/workspace.json`.
 - **The scanner is heuristic.** See above.
 - **`transcriptsSameWorkspace` matches the encoded directory name.** If the encoding scheme changes, the filter can match nothing. The reader now preserves the workspace boundary and reports that no matching transcript evidence was available rather than reading conversations from other projects.
 - **The cross-process lock is advisory.** It is a lock file, not an OS advisory lock. It coordinates two processes that both use this plugin; it cannot stop an unrelated program from writing to the same files.
+- **A lock held by another host is refused, not stolen.** Liveness can only be checked for a process on this machine. If the recorded owner is on a different host and the lock is older than the stale window, the mutation fails and `memory_status` names the lock file. Remove that file by hand once you know the other machine is gone — age alone is not proof.
+- **The lock is not a lease.** A writer that stalls for longer than the stale window keeps its lock only while its process is alive locally; there is no heartbeat or fencing token. On a shared filesystem, prefer running one writer per memory root.
 
 ## License
 

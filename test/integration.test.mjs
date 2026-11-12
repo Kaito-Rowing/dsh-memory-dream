@@ -552,16 +552,17 @@ test('a held lock refuses the write instead of overwriting', async () => {
   })
 })
 
-test('a stale lock is broken rather than blocking', async () => {
+test('an unreadable stale lock is broken rather than blocking', async () => {
   await sandbox(async (home) => {
     const p = await boot({ home })
     const lockFile = join(home, 'memory', '.state', 'write.lock')
     await mkdir(join(home, 'memory', '.state'), { recursive: true })
-    await writeFile(lockFile, JSON.stringify({ pid: 99999, host: 'other', at: 0 }))
+    // No owner record at all: a live writer writes one within milliseconds of
+    // creating the file, so an old empty lock is a crash artifact.
+    await writeFile(lockFile, '')
 
     const { __lockTiming } = await import('../lib/store.js')
     const saved = { ...__lockTiming }
-    // Any lock older than the stale threshold is broken.
     __lockTiming.staleMs = 0
     __lockTiming.timeoutMs = 500
     __lockTiming.retryMs = 10
@@ -569,10 +570,65 @@ test('a stale lock is broken rather than blocking', async () => {
       const r = await p.call('memory', { operations: [{ action: 'add', content: 'after stale' }] })
       assert.equal(r.success, true)
       const s = await p.call('memory_status', {})
-      assert.match(s.lock, /^ok/, 'breaking a stale lock is not a degradation')
+      assert.match(s.lock, /^ok/, 'breaking a crash artifact is not a degradation')
     } finally {
       Object.assign(__lockTiming, saved)
     }
+  })
+})
+
+test('a stale lock from another host is refused, not stolen', async () => {
+  // Age is not proof of death: the owner may be a live writer on a machine
+  // whose process table we cannot read. Stealing it would put two writers in
+  // the critical section at once.
+  await sandbox(async (home) => {
+    const p = await boot({ home })
+    const lockFile = join(home, 'memory', '.state', 'write.lock')
+    await mkdir(join(home, 'memory', '.state'), { recursive: true })
+    await writeFile(
+      lockFile,
+      JSON.stringify({ pid: 99999, host: 'some-other-machine', at: 0, token: 'abc' }),
+    )
+
+    const { __lockTiming } = await import('../lib/store.js')
+    const saved = { ...__lockTiming }
+    __lockTiming.staleMs = 0 // as stale as a lock can be
+    __lockTiming.timeoutMs = 200
+    __lockTiming.retryMs = 10
+    try {
+      const r = await p.call('memory', { operations: [{ action: 'add', content: 'nope' }] })
+      assert.equal(r.success, false, 'a foreign lock must not be stolen')
+      assert.match(r.error, /another host/i)
+
+      const s = await p.call('memory_status', {})
+      assert.match(s.lock, /degraded/)
+      assert.match(s.lock, /some-other-machine/)
+
+      // The lock file is still there: we refused, we did not break it.
+      const still = await readFile(lockFile, 'utf8')
+      assert.match(still, /some-other-machine/)
+    } finally {
+      Object.assign(__lockTiming, saved)
+    }
+  })
+})
+
+test('release does not unlink a successor lock', async () => {
+  await sandbox(async (home) => {
+    const { withLock } = await import('../lib/store.js')
+    const root = join(home, 'memory')
+    await mkdir(join(root, '.state'), { recursive: true })
+    const lockFile = join(root, '.state', 'write.lock')
+
+    await withLock(root, async () => {
+      // Simulate the lock being replaced under us (broken by hand, or lost by
+      // a filesystem). Releasing must not delete the new owner's file.
+      await writeFile(lockFile, JSON.stringify({ pid: 1, host: 'x', at: 0, token: 'successor' }))
+    })
+
+    const after = await readFile(lockFile, 'utf8').catch(() => null)
+    assert.ok(after, 'the successor lock must survive our release')
+    assert.match(after, /successor/)
   })
 })
 
